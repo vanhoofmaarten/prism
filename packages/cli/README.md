@@ -13,49 +13,29 @@ prism-cli
 # Usage
 <!-- usage -->
 ```sh-session
-$ npm install -g prism-cli
-$ prism-cli COMMAND
+$ npm install -g @stoplight/prism-cli
+$ prism COMMAND
 running command...
-$ prism-cli (-v|--version|version)
-prism-cli/0.0.0 linux-x64 node-v8.9.0
-$ prism-cli --help [COMMAND]
+$ prism (-v|--version|version)
+@stoplight/prism-cli/3.0.0 darwin-x64 node-v11.13.0
+$ prism --help [COMMAND]
 USAGE
-  $ prism-cli COMMAND
+  $ prism COMMAND
 ...
 ```
 <!-- usagestop -->
 # Commands
 <!-- commands -->
-* [`prism-cli hello [FILE]`](#prism-cli-hello-file)
-* [`prism-cli help [COMMAND]`](#prism-cli-help-command)
+* [`prism help [COMMAND]`](#prism-help-command)
+* [`prism serve`](#prism-serve)
 
-## `prism-cli hello [FILE]`
+## `prism help [COMMAND]`
 
-describe the command here
-
-```
-USAGE
-  $ prism-cli hello [FILE]
-
-OPTIONS
-  -f, --force
-  -h, --help       show CLI help
-  -n, --name=name  name to print
-
-EXAMPLE
-  $ prism-cli hello
-  hello world from ./src/hello.ts!
-```
-
-_See code: [src/commands/hello.ts](https://github.com/chris-miaskowski/prism-cli/blob/v0.0.0/src/commands/hello.ts)_
-
-## `prism-cli help [COMMAND]`
-
-display help for prism-cli
+display help for prism
 
 ```
 USAGE
-  $ prism-cli help [COMMAND]
+  $ prism help [COMMAND]
 
 ARGUMENTS
   COMMAND  command to show help for
@@ -64,7 +44,23 @@ OPTIONS
   --all  see all commands in CLI
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v2.1.3/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v2.1.6/src/commands/help.ts)_
+
+## `prism serve`
+
+Start a server with the given spec file
+
+```
+USAGE
+  $ prism serve
+
+OPTIONS
+  -m, --mock       Turn global mocking on or off
+  -p, --port=port  (required) [default: 4010] Port that Prism will run on.
+  -s, --spec=spec  (required) Path to a spec file
+```
+
+_See code: [src/commands/serve.ts](https://github.com/stoplightio/prism/blob/v3.0.0/src/commands/serve.ts)_
 <!-- commandsstop -->
 
 ## Development
