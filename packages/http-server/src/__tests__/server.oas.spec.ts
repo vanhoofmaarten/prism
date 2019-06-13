@@ -11,6 +11,168 @@ function checkErrorPayloadShape(payload: string) {
   expect(parsedPayload).toHaveProperty('detail');
 }
 
+async function instantiatePrism(specPath: string) {
+  const server = createServer({}, { components: {}, config: { mock: { dynamic: false } } });
+  await server.prism.load({
+    path: relative(process.cwd(), specPath),
+  });
+  return server;
+}
+
+// Note that these test cases cover the situation describe in https://stoplightio.atlassian.net/browse/SO-265
+// The way this works is purely judgemental right now and that ticket is meant to figure out the right way.
+describe.only('given spec with operations with and without content', () => {
+  let server: IPrismHttpServer<{}>;
+
+  beforeAll(async () => {
+    server = await instantiatePrism(resolve(__dirname, 'fixtures', 'content-vs-no-content.oas3.json'));
+  });
+
+  afterAll(() => server.fastify.close());
+
+  test('when GET /without-content withouth Accept header should return 200', async () => {
+    expect(
+      await server.fastify.inject({
+        method: 'GET',
+        url: '/without-content',
+      }),
+    ).toMatchObject({
+      statusCode: 200,
+      payload: '',
+    });
+  });
+
+  test('when GET /pet withouth Accept header should return 406', async () => {
+    // This happens when, for instance, we use an http client such as `curl`
+    // Some tools will add Accept */* by default even if you don't do it explicitly
+    expect(
+      await server.fastify.inject({
+        method: 'GET',
+        url: '/without-content',
+        headers: {
+          Accept: '*/*',
+        },
+      }),
+    ).toMatchObject({
+      statusCode: 406,
+      payload:
+        '{"type":"https://stoplight.io/prism/errors#NOT_ACCEPTABLE","title":"The server cannot produce a representation for your accept header","status":406,"detail":"Could not find any content that satisfies */*"}',
+    });
+  });
+
+  test('when GET /with-content withouth Accept header should return 200 and empty message', async () => {
+    expect(
+      await server.fastify.inject({
+        method: 'GET',
+        url: '/with-content',
+      }),
+    ).toMatchObject({
+      statusCode: 200,
+      payload: '',
+    });
+  });
+
+  test('when GET /with-content with supported Accept header should return 200', async () => {
+    expect(
+      await server.fastify.inject({
+        method: 'GET',
+        url: '/with-content',
+        headers: {
+          Accept: 'text/plain',
+        },
+      }),
+    ).toMatchObject({
+      statusCode: 200,
+      payload: '',
+    });
+  });
+
+  test('when GET /with-content with unsupported Accept header should return 406', async () => {
+    expect(
+      await server.fastify.inject({
+        method: 'GET',
+        url: '/with-content',
+        headers: {
+          Accept: 'foo/bar',
+        },
+      }),
+    ).toMatchObject({
+      statusCode: 406,
+      payload: '',
+    });
+  });
+});
+
+describe('given minimal oas3 with templated server', () => {
+  let server: IPrismHttpServer<{}>;
+
+  beforeAll(async () => {
+    server = await instantiatePrism(resolve(__dirname, 'fixtures', 'templated-server-example.oas3.json'));
+  });
+
+  afterAll(() => server.fastify.close());
+
+  test('when GET /pet with server matching a template should return 200', async () => {
+    expect(await requestPetGivenServer('http://stoplight.io/api')).toMatchObject({
+      statusCode: 200,
+      payload: '',
+    });
+    expect(await requestPetGivenServer('https://stoplight.io/api')).toMatchObject({
+      statusCode: 200,
+      payload: '',
+    });
+  });
+
+  test('when GET /pet with server not matching a template should return 400', async () => {
+    const expectedPayload = (serverUrl: string) =>
+      `{"type":"https://stoplight.io/prism/errors#NO_SERVER_MATCHED_ERROR","title":"Route not resolved, no server matched.","status":404,"detail":"The base url ${serverUrl} hasn\'t been matched with any of the provided servers"}`;
+
+    expect(await requestPetGivenServer('ftp://stoplight.io/api')).toMatchObject({
+      statusCode: 404,
+      payload: expectedPayload('ftp://stoplight.io/api'),
+    });
+    expect(await requestPetGivenServer('https://stoplight.com/api')).toMatchObject({
+      statusCode: 404,
+      payload: expectedPayload('https://stoplight.com/api'),
+    });
+    expect(await requestPetGivenServer('https://google.com/api')).toMatchObject({
+      statusCode: 404,
+      payload: expectedPayload('https://google.com/api'),
+    });
+    expect(await requestPetGivenServer('https://stopligt.io/v1')).toMatchObject({
+      statusCode: 404,
+      payload: expectedPayload('https://stopligt.io/v1'),
+    });
+  });
+
+  function requestPetGivenServer(serverUrl: string) {
+    return server.fastify.inject({
+      method: 'GET',
+      url: `/pet?__server=${serverUrl}`,
+    });
+  }
+});
+
+describe('given getOperationWithBody.oas2.json', () => {
+  test('when GET /pet with invalid body returns correct error message', async () => {
+    const server = await instantiatePrism(resolve(__dirname, 'fixtures', 'getOperationWithBody.oas2.json'));
+
+    const response = await server.fastify.inject({
+      method: 'GET',
+      url: '/pet',
+      payload: {
+        id: 'strings are not valid!',
+      },
+    });
+
+    expect(response.statusCode).toBe(422);
+    expect(response.payload).toEqual(
+      '{"type":"https://stoplight.io/prism/errors#UNPROCESSABLE_ENTITY","title":"Invalid request body payload","status":422,"detail":"Your request body is not valid: [{\\"path\\":[\\"body\\"],\\"code\\":\\"type\\",\\"message\\":\\"should be object\\",\\"severity\\":0}]"}',
+    );
+    await server.fastify.close();
+  });
+});
+
 describe.each([['petstore.oas2.json'], ['petstore.oas3.json']])('server %s', file => {
   let server: IPrismHttpServer<{}>;
 

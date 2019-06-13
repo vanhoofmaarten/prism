@@ -1,0 +1,27 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/without-content": {
+      "get": {
+        "responses": {
+          "200": {}
+        }
+      }
+    },
+    "/with-content": {
+      "get": {
+        "responses": {
+          "200": {
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
