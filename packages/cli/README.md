@@ -1,5 +1,4 @@
-prism-cli
-=========
+# prism-cli
 
 [![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
 [![Version](https://img.shields.io/npm/v/prism-cli.svg)](https://npmjs.org/package/@stoplight/prism-cli)
@@ -7,27 +6,35 @@ prism-cli
 [![License](https://img.shields.io/npm/l/prism-cli.svg)](https://github.com/stoplightio/prism/blob/master/package.json)
 
 <!-- toc -->
+* [prism-cli](#prism-cli)
 * [Usage](#usage)
 * [Commands](#commands)
 <!-- tocstop -->
+
 # Usage
+
 <!-- usage -->
+
 ```sh-session
 $ npm install -g @stoplight/prism-cli
 $ prism COMMAND
 running command...
 $ prism (-v|--version|version)
-@stoplight/prism-cli/3.0.0-alpha.14 darwin-x64 node-v12.4.0
+@stoplight/prism-cli/3.0.0-alpha.16 darwin-x64 node-v12.4.0
 $ prism --help [COMMAND]
 USAGE
   $ prism COMMAND
 ...
 ```
+
 <!-- usagestop -->
+
 # Commands
+
 <!-- commands -->
-* [`prism help [COMMAND]`](#prism-help-command)
-* [`prism mock SPEC`](#prism-mock-spec)
+
+- [`prism help [COMMAND]`](#prism-help-command)
+- [`prism mock SPEC`](#prism-mock-spec)
 
 ## `prism help [COMMAND]`
 
@@ -63,8 +70,14 @@ OPTIONS
   -p, --port=port  (required) [default: 4010] Port that Prism will run on.
 ```
 
-_See code: [src/commands/mock.ts](https://github.com/stoplightio/prism/blob/v3.0.0-alpha.14/src/commands/mock.ts)_
+_See code: [src/commands/mock.ts](https://github.com/stoplightio/prism/blob/v3.0.0-alpha.16/src/commands/mock.ts)_
 <!-- commandsstop -->
+
+## Running in production
+
+When running in development mode (which happens when the `NODE_ENV` environment variable is not set to `production`) or the `-m` flag is set to false, both the HTTP Server and the CLI (which is responsible of parsing and showing the received logs on the screen) will run within the same process.
+
+Processing logs slows down the process significantly. If you're planning to use the CLI in production (for example in a Docker Container) we recommend to run the CLI with the `-m` flag or set the `NODE_ENV` variable to `production`. In this way, the CLI and the HTTP server will run on two different processes, so that logs processing, parsing and printing does not slow down the http requests processing.
 
 ## Development
 

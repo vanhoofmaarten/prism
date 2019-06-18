@@ -1,9 +1,13 @@
-import { IMocker, IMockerOpts } from '@stoplight/prism-core';
-import { Dictionary, IHttpHeaderParam, IHttpOperation, INodeExample, INodeExternalExample } from '@stoplight/types';
+import { IMocker, IMockerOpts, IPrismInput } from '@stoplight/prism-core';
+import { Dictionary, IHttpHeaderParam, IHttpOperation, INodeExample } from '@stoplight/types';
 
 import * as caseless from 'caseless';
-import { fromPairs, isEmpty, isObject, keyBy, mapValues, toPairs } from 'lodash';
+import { Either } from 'fp-ts/lib/Either';
+import { Reader } from 'fp-ts/lib/Reader';
+import { isEmpty, isObject, keyBy, mapValues } from 'lodash';
+import { Logger } from 'pino';
 import {
+  ContentExample,
   IHttpConfig,
   IHttpOperationConfig,
   IHttpRequest,
@@ -11,74 +15,97 @@ import {
   PayloadGenerator,
   ProblemJsonError,
 } from '../types';
+import withLogger from '../withLogger';
 import { UNPROCESSABLE_ENTITY } from './errors';
+import { generate, generateStatic } from './generator/JSONSchema';
 import helpers from './negotiator/NegotiatorHelpers';
 import { IHttpNegotiationResult } from './negotiator/types';
 
-export class HttpMocker implements IMocker<IHttpOperation, IHttpRequest, IHttpConfig, IHttpResponse> {
-  constructor(private _exampleGenerator: PayloadGenerator) {}
-
-  public async mock({
+export class HttpMocker
+  implements IMocker<IHttpOperation, IHttpRequest, IHttpConfig, Reader<Logger, Either<Error, IHttpResponse>>> {
+  public mock({
     resource,
     input,
     config,
-  }: Partial<IMockerOpts<IHttpOperation, IHttpRequest, IHttpConfig>>): Promise<IHttpResponse> {
-    // pre-requirements check
-    if (!resource) {
-      throw new Error('Resource is not defined');
-    }
+  }: IMockerOpts<IHttpOperation, IHttpRequest, IHttpConfig>): Reader<Logger, Either<Error, IHttpResponse>> {
+    const payloadGenerator: PayloadGenerator =
+      config && typeof config.mock !== 'boolean' && config.mock.dynamic ? generate : generateStatic;
 
-    if (!input) {
-      throw new Error('Http request is not defined');
-    }
+    return withLogger(logger => {
+      // setting default values
+      const acceptMediaType = input.data.headers && caseless(input.data.headers).get('accept');
+      config = config || { mock: false };
+      const mockConfig: IHttpOperationConfig =
+        config.mock === false ? { dynamic: false } : Object.assign({}, config.mock);
 
-    // setting default values
-    const acceptMediaType = input.data.headers && caseless(input.data.headers).get('accept');
-    config = config || { mock: false };
-    const mockConfig: IHttpOperationConfig =
-      config.mock === false ? { dynamic: false } : Object.assign({}, config.mock);
-
-    if (!mockConfig.mediaTypes && acceptMediaType) {
-      mockConfig.mediaTypes = acceptMediaType.split(',');
-    }
-
-    // looking up proper example
-    let negotiationResult: IHttpNegotiationResult;
-    if (input.validations.input.length > 0) {
-      try {
-        negotiationResult = helpers.negotiateOptionsForInvalidRequest(resource.responses);
-      } catch (error) {
-        throw ProblemJsonError.fromTemplate(
-          UNPROCESSABLE_ENTITY,
-          `Your request body is not valid: ${JSON.stringify(input.validations.input)}`,
-        );
+      if (!mockConfig.mediaTypes && acceptMediaType) {
+        logger.info(`Request contains an accept header: ${acceptMediaType}`);
+        mockConfig.mediaTypes = acceptMediaType.split(',');
       }
-    } else {
-      negotiationResult = helpers.negotiateOptionsForValidRequest(resource, mockConfig);
-    }
 
-    const [body, mockedHeaders] = await Promise.all([
-      computeBody(negotiationResult, this._exampleGenerator),
-      computeMockedHeaders(negotiationResult.headers || [], this._exampleGenerator),
-    ]);
-
-    return {
-      statusCode: parseInt(negotiationResult.code),
-      headers: {
-        ...mockedHeaders,
-        'Content-type': negotiationResult.mediaType,
-      },
-      body,
-    };
+      return mockConfig;
+    })
+      .chain(mockConfig => negotiateResponse(mockConfig, input, resource))
+      .chain(result => assembleResponse(result, payloadGenerator));
   }
 }
 
-function isINodeExample(nodeExample: INodeExample | INodeExternalExample | undefined): nodeExample is INodeExample {
+function negotiateResponse(
+  mockConfig: IHttpOperationConfig,
+  input: IPrismInput<IHttpRequest>,
+  resource: IHttpOperation,
+) {
+  if (input.validations.input.length > 0) {
+    return withLogger(logger => logger.warn('Request did not pass the validation rules')).chain(() =>
+      helpers
+        .negotiateOptionsForInvalidRequest(resource.responses)
+        .map(e =>
+          e.mapLeft(() =>
+            ProblemJsonError.fromTemplate(
+              UNPROCESSABLE_ENTITY,
+              `Your request body is not valid: ${JSON.stringify(input.validations.input)}`,
+            ),
+          ),
+        ),
+    );
+  } else {
+    return withLogger(logger =>
+      logger.success('The request passed the validation rules. Looking for the best response'),
+    ).chain(() => helpers.negotiateOptionsForValidRequest(resource, mockConfig));
+  }
+}
+
+function assembleResponse(
+  result: Either<Error, IHttpNegotiationResult>,
+  payloadGenerator: PayloadGenerator,
+): Reader<Logger, Either<Error, IHttpResponse>> {
+  return withLogger(logger =>
+    result.map(negotiationResult => {
+      const mockedBody = computeBody(negotiationResult, payloadGenerator);
+      const mockedHeaders = computeMockedHeaders(negotiationResult.headers || [], payloadGenerator);
+
+      const response: IHttpResponse = {
+        statusCode: parseInt(negotiationResult.code),
+        headers: {
+          ...mockedHeaders,
+          'Content-type': negotiationResult.mediaType,
+        },
+        body: mockedBody,
+      };
+
+      logger.success(`Responding with the requested status code ${response.statusCode}`);
+
+      return response;
+    }),
+  );
+}
+
+function isINodeExample(nodeExample: ContentExample | undefined): nodeExample is INodeExample {
   return !!nodeExample && 'value' in nodeExample;
 }
 
-function computeMockedHeaders(headers: IHttpHeaderParam[], ex: PayloadGenerator): Promise<Dictionary<string>> {
-  const headerWithPromiseValues = mapValues(keyBy(headers, h => h.name), async header => {
+function computeMockedHeaders(headers: IHttpHeaderParam[], payloadGenerator: PayloadGenerator): Dictionary<string> {
+  return mapValues(keyBy(headers, h => h.name), header => {
     if (header.schema) {
       if (header.examples && header.examples.length > 0) {
         const example = header.examples[0];
@@ -86,29 +113,22 @@ function computeMockedHeaders(headers: IHttpHeaderParam[], ex: PayloadGenerator)
           return example.value;
         }
       } else {
-        const example = await ex(header.schema);
+        const example = payloadGenerator(header.schema);
         if (!(isObject(example) && isEmpty(example))) return example;
       }
     }
-    return '';
+    return null;
   });
-
-  return resolvePromiseInProps(headerWithPromiseValues);
 }
 
-async function computeBody(
+function computeBody(
   negotiationResult: Pick<IHttpNegotiationResult, 'schema' | 'mediaType' | 'bodyExample'>,
-  ex: PayloadGenerator,
+  payloadGenerator: PayloadGenerator,
 ) {
   if (isINodeExample(negotiationResult.bodyExample) && negotiationResult.bodyExample.value !== undefined) {
     return negotiationResult.bodyExample.value;
   } else if (negotiationResult.schema) {
-    return ex(negotiationResult.schema);
+    return payloadGenerator(negotiationResult.schema);
   }
   return undefined;
-}
-
-async function resolvePromiseInProps(val: Dictionary<Promise<string>>): Promise<Dictionary<string>> {
-  const promisePair = await Promise.all(toPairs(val).map(v => Promise.all(v)));
-  return fromPairs(promisePair);
 }
