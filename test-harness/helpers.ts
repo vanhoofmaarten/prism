@@ -1,22 +1,19 @@
-const fs = require('fs');
-const { join } = require('path');
-const fetch = require('node-fetch');
+import * as  fs from 'fs';
+import { join } from 'path';
+import fetch from 'node-fetch';
 
-const getPort = ({ PRISM_PORT }) => PRISM_PORT  || 4010;
-
-async function makeRequest({ path, method, headers = {}, body }) {
+export async function makeRequest({ path, method, headers = {}, body }) {
   const opts =
     method === 'GET' || method === 'HEAD'
       ? {}
       : { body: headers['Content-Type'] === 'application/json' ? JSON.stringify(body) : body };
   const baseOpts = Object.assign({}, opts, { method, headers });
-  const host = `http://localhost:${getPort(process)}`;
+  const host = `http://localhost:${process.env.PRISM_PORT || 4010}`;
   const requestConfig = {
     ...baseOpts,
     path,
     host,
   };
-
   return fetch(`${host}${path}`, requestConfig)
     .then(async response => {
       const { date, ...headers } = response.headers.raw();
@@ -30,25 +27,15 @@ async function makeRequest({ path, method, headers = {}, body }) {
           body: await response.json(),
         },
       };
-    })
-    .catch(err => {
-      console.log('err', err);
     });
 }
 
-function constructMasterFileName(request) {
+export function constructMasterFileName(request) {
   return JSON.stringify(request).replace(/[{},":/]/gim, '_');
 }
 
-function readFile(hash) {
+export function readFile(hash) {
   const fileContent = fs.readFileSync(join(__dirname, '/gold-master-files/') + `${hash}.json`).toString();
 
   return JSON.parse(fileContent);
 }
-
-module.exports = {
-  constructMasterFileName,
-  makeRequest,
-  readFile,
-  getPort
-};

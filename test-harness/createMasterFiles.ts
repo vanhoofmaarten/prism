@@ -1,6 +1,7 @@
-const fs = require('fs');
-const { join } = require('path');
-const requests = require('./requests');
+import * as fs from 'fs'
+import { join } from 'path'
+import { omit } from 'lodash'
+import requests from './requests'
 
 const { makeRequest, constructMasterFileName } = require('./helpers');
 
@@ -19,13 +20,11 @@ async function recordMasterFile({ path, method, headers, body }) {
           body,
         }))
       }.json`,
-      `${JSON.stringify(reqRes, null, 2)}\n`
+      `${JSON.stringify(omit(reqRes, 'request.host'), null, 2)}\n`
     )
   } catch (err) {
     console.error(err);
   }
 }
 
-(async function() {
-  await Promise.all(requests.map(recordMasterFile));
-})();
+Promise.all(requests.map(recordMasterFile));

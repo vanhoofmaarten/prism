@@ -1,11 +1,11 @@
 import { createLogger } from '@stoplight/prism-core';
-import { JSONSchema } from '@stoplight/prism-http/src/types';
 import { IHttpOperation, INodeExample } from '@stoplight/types';
 import { Either, right } from 'fp-ts/lib/Either';
 import { reader } from 'fp-ts/lib/Reader';
 import { flatMap } from 'lodash';
 import { HttpMocker } from '../../mocker';
 import * as JSONSchemaGenerator from '../../mocker/generator/JSONSchema';
+import { JSONSchema } from '../../types';
 import helpers from '../negotiator/NegotiatorHelpers';
 
 function assertRight<L, A>(e: Either<L, A>, onRight: (a: A) => void) {

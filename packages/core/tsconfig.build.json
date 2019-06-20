@@ -1,10 +1,10 @@
 {
-  "extends": "../tsconfig.build.json",
+  "include": ["src"],
+  "exclude": ["src/**/__tests__/**/*.ts"],
+  "extends": "./tsconfig.json",
   "compilerOptions": {
-    "outDir": "lib",
+    "composite": true,
     "rootDir": "src",
-  },
-  "include": [
-    "src"
-  ],
+    "outDir": "dist"
+  }
 }

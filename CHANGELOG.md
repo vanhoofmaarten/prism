@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# 3.0.0-beta.1 (2019-06-18)
+
+### Features
+
+- Prism is now logging all the negotiator phases for a better observability #323
+
+- The HTTP Client API has been documented #355
+
+### Bug Fixes
+
+- Prism's build process in TypeScript has been revisited #356
+
 # 3.0.0-alpha.16 (2019-06-17)
 
 ### Features
