@@ -1,0 +1,27 @@
+Does another thing
+=====
+openapi: 3.0.2
+paths:
+  /todos:
+    get:
+      parameters:
+        - name: title
+          in: query
+          style: form
+          schema:
+            enum:
+              - eat
+              - drink
+      responses:
+        200:
+          description: Get Todo Items
+          content:
+            'text/plain':
+              example: Write great OpenAPI specs!
+=====
+mock -p 4011
+=====
+curl -X GET http://localhost:4011/todoa
+=====
+{"type":"https://stoplight.io/prism/errors#NO_PATH_MATCHED_ERROR","title":"Route not resolved, no path matched.","status":404,"detail":"The route /todoa hasn't been found in the specification file"}
+=====
