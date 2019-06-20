@@ -17,7 +17,7 @@ describe('harness', () => {
     let prismMockProcessHandle: cp.ChildProcessWithoutNullStreams;
     let tmpFileHandle: tmp.FileSyncObject;
 
-    beforeAll(done => {
+    beforeAll(() => {
       tmpFileHandle = tmp.fileSync({
         postfix: '.yml',
         dir: undefined,
@@ -29,28 +29,28 @@ describe('harness', () => {
       });
 
       fs.writeFileSync(tmpFileHandle.name, parsed.spec, { encoding: 'utf8' });
-      const args = [...parsed.server.split(' '), tmpFileHandle.name];
-
-      prismMockProcessHandle = cp.spawn(path.join(__dirname, '../cli-binaries/prism-cli-linux'), args);
-
-      prismMockProcessHandle.stdio.forEach(s => s.pipe(split2()).on('data', (s: string) => prismMockProcessHandle.connected && console.log(s)))
-      prismMockProcessHandle.stdout.pipe(split2()).on('data', (line: string) => {
-        if (line.includes('Prism is listening')) done();
-      });
     });
 
     afterAll(done => {
       tmpFileHandle.removeCallback(null, null, null, null);
       prismMockProcessHandle.kill();
       prismMockProcessHandle.on('exit', done)
-
     });
 
-    it(parsed.test, () => {
+    it(parsed.test, done => {
       const [command, ...args] = parsed.command.split(' ');
-      const clientCommandHandle = cp.spawnSync(command, args, { encoding: 'utf8' });
+      const serverArgs = [...parsed.server.split(' '), tmpFileHandle.name];
 
-      expect(clientCommandHandle.stdout).toEqual(parsed.expect);
+      prismMockProcessHandle = cp.spawn(path.join(__dirname, '../cli-binaries/prism-cli-linux'), serverArgs);
+
+      prismMockProcessHandle.stdio.forEach(s => s.pipe(split2()).on('data', (s: string) => prismMockProcessHandle.connected && console.log(s)))
+      prismMockProcessHandle.stdout.pipe(split2()).on('data', (line: string) => {
+        if (line.includes('Prism is listening')) {
+          const clientCommandHandle = cp.spawnSync(command, args, { encoding: 'utf8' });
+          expect(clientCommandHandle.stdout).toEqual(parsed.expect);
+        }
+        done();
+      });
     });
   });
 });
