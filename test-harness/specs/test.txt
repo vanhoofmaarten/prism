@@ -1,5 +1,6 @@
+==test==
 Does a thing
-=====
+==spec==
 openapi: 3.0.2
 paths:
   /todos:
@@ -18,10 +19,10 @@ paths:
           content:
             'text/plain':
               example: Write great OpenAPI specs!
-=====
+==server==
 mock -p 4010
-=====
+==command==
 curl -X GET http://localhost:4010/todos
-=====
+==expect==
 Write great OpenAPI specs!
 =====

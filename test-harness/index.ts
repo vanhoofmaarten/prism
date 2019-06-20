@@ -28,8 +28,8 @@ describe('harness', () => {
         template: undefined,
       });
 
-      fs.writeFileSync(tmpFileHandle.name, parsed.file, { encoding: 'utf8' });
-      const args = [...parsed.runCommand, tmpFileHandle.name];
+      fs.writeFileSync(tmpFileHandle.name, parsed.spec, { encoding: 'utf8' });
+      const args = [...parsed.server.split(' '), tmpFileHandle.name];
 
       prismMockProcessHandle = cp.spawn(path.join(__dirname, '../cli-binaries/prism-cli-linux'), args);
 
@@ -47,7 +47,7 @@ describe('harness', () => {
     });
 
     it(parsed.test, () => {
-      const [command, ...args] = parsed.clientCommand.split(' ');
+      const [command, ...args] = parsed.command.split(' ');
       const clientCommandHandle = cp.spawnSync(command, args, { encoding: 'utf8' });
 
       expect(clientCommandHandle.stdout).toEqual(parsed.expect);

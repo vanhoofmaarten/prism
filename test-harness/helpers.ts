@@ -1,7 +1,19 @@
-export function parseSpecFile(spec: string) {
-  const marker = '=====';
+export function parseSpecFile(spec: string): any {
+  const regex = /==(server|test|spec|command|expect)==\n(([^=])*)/gi
 
-  const [test, file, runCommand, clientCommand, expect] = spec.split(marker).map(t => t.trim());
+  const obj = {}
+  let m;
 
-  return { test: test, file: file, runCommand: runCommand.split(' ').map(t => t.trim()), clientCommand: clientCommand, expect: expect }
+  while ((m = regex.exec(spec)) !== null) {
+    // This is necessary to avoid infinite loops with zero-width matches
+    if (m.index === regex.lastIndex) {
+      regex.lastIndex++;
+    }
+
+    obj[m[1]] = m[2].trim()
+    // The result can be accessed through the `m`-variable.
+  }
+
+  return obj;
+
 }
