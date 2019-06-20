@@ -1,5 +1,5 @@
 export function parseSpecFile(spec: string): any {
-  const regex = /==(server|test|spec|command|expect)==\n(([^=])*)/gi
+  const regex = /====(server|test|spec|command|expect)====\n(([^=])*)/gi
 
   const obj = {}
   let m;
