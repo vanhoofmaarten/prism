@@ -33,11 +33,7 @@ describe('harness', () => {
       fs.writeFileSync(tmpFileHandle.name, parsed.spec, { encoding: 'utf8' });
     });
 
-    afterAll(done => {
-      tmpFileHandle.removeCallback(null, null, null, null);
-      prismMockProcessHandle.kill();
-      prismMockProcessHandle.on('exit', done)
-    });
+    afterAll(() => tmpFileHandle.removeCallback());
 
     it(parsed.test, done => {
       const [command, ...args] = parsed.command.split(' ').map(t => t.trim());
@@ -45,7 +41,6 @@ describe('harness', () => {
 
       prismMockProcessHandle = cp.spawn(path.join(__dirname, '../cli-binaries/prism-cli-linux'), serverArgs);
 
-      prismMockProcessHandle.stdio.forEach(s => s.pipe(split2()).on('data', (s: string) => prismMockProcessHandle.connected && console.log(s)))
       prismMockProcessHandle.stdout.pipe(split2()).on('data', (line: string) => {
         if (line.includes('Prism is listening')) {
           const clientCommandHandle = cp.spawnSync(command, args, { encoding: 'utf8' });
@@ -54,7 +49,8 @@ describe('harness', () => {
 
           expect(validate(expected, output).isValid).toBeTruthy();
 
-          done();
+          prismMockProcessHandle.kill();
+          prismMockProcessHandle.on('exit', done)
         }
       });
     });
