@@ -22,9 +22,8 @@ describe('harness', () => {
         postfix: '.yml',
         dir: undefined,
         name: undefined,
-        prefix: parsed.test,
+        prefix: undefined,
         tries: 10,
-        unsafeCleanup: false,
         template: undefined,
       });
 
