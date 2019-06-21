@@ -1,0 +1,25 @@
+strategy:
+  matrix:
+    linux:
+      imageName: 'ubuntu-16.04'
+    mac:
+      imageName: 'macOS-10.14'
+    windows:
+      imageName: 'vs2017-win2016'
+
+pr:
+  - master
+
+pool:
+  vmImage: $(imageName)
+
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '10.x'
+  displayName: 'Install Node.js'
+
+- script: |
+    yarn install
+    yarn test
+  displayName: 'Run tests'
