@@ -19,14 +19,14 @@ If the dependencies were not installed, you might experience `Error: command moc
 
 Start Prism with the target file you'd like and then run the command
 
-1. `yarn test.binary`
-2. `SPEC=./examples/petstore.oas2.json yarn test.binary`
-3. `SPEC=./examples/petstore.oas2.json PRISM_PORT=4011 yarn test.binary`
+1. `yarn test.harness`
+2. `SPEC=./examples/petstore.oas2.json yarn test.harness`
+3. `SPEC=./examples/petstore.oas2.json PRISM_PORT=4011 yarn test.harness`
 
 > `SPEC` can take comma delimited paths to specs
 
 
-When doing `yarn test.binary`, the envs are optional, they have defaults.
+When doing `yarn test.harness`, the envs are optional, they have defaults.
 
 1. `SPEC` defaults to using `petstore.oas2.json`
 2. `PRISM_PORT` defaults to using `4010`

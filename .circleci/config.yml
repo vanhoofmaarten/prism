@@ -53,9 +53,8 @@ jobs:
           name: Create Linux CLI binary
           command: HOST=host yarn build.binary
       - run:
-          name: Run OAS3 Harness
-          command: |
-            PRISM_PORT=4011 SPEC=./examples/petstore.oas3.json yarn test.binary
+          name: Run Harness
+          command: yarn test.harness
 
   publish:
     docker:
