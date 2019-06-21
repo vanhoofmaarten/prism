@@ -1,19 +1,19 @@
 export function parseSpecFile(spec: string): any {
-  const regex = /====(server|test|spec|command|expect)====\r?\n(([^=])*)/gi
+  const regex = /====(server|test|spec|command|expect)====\r?\n/gi
+  const splitted = spec.split(regex);
 
-  const obj = {}
-  let m;
+  const testIndex = splitted.findIndex(t => t === 'test');
+  const specIndex = splitted.findIndex(t => t === 'spec');
+  const serverIndex = splitted.findIndex(t => t === 'server');
+  const commandIndex = splitted.findIndex(t => t === 'command');
+  const expectIndex = splitted.findIndex(t => t === 'expect');
 
-  while ((m = regex.exec(spec)) !== null) {
-    // This is necessary to avoid infinite loops with zero-width matches
-    if (m.index === regex.lastIndex) {
-      regex.lastIndex++;
-    }
-
-    obj[m[1]] = m[2].trim()
-    // The result can be accessed through the `m`-variable.
-  }
-
-  return obj;
+  return {
+    test: splitted[1 + testIndex],
+    spec: splitted[1 + specIndex],
+    server: splitted[1 + serverIndex],
+    command: splitted[1 + commandIndex],
+    expect: splitted[1 + expectIndex],
+  };
 
 }

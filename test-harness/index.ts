@@ -3,8 +3,17 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as tmp from 'tmp';
 import * as cp from 'child_process';
+import { toMatchDiffSnapshot } from 'snapshot-diff'
 import split2 = require('split2');
+import * as os from 'os'
 
+const SNAPSHOT_TITLE = 'Snapshot Diff:\n';
+
+expect.extend({ toMatchDiffSnapshot })
+expect.addSnapshotSerializer({
+  print: (value: string) => value.split(os.EOL).filter(t => !t.includes('Date')).join(os.EOL),
+  test: (value: unknown) => typeof value === 'string' && value.indexOf(SNAPSHOT_TITLE) === 0
+});
 jest.setTimeout(60000)
 
 describe('harness', () => {
@@ -25,6 +34,7 @@ describe('harness', () => {
         prefix: undefined,
         tries: 10,
         template: undefined,
+        unsafeCleanup: undefined
       });
 
       fs.writeFileSync(tmpFileHandle.name, parsed.spec, { encoding: 'utf8' });
@@ -37,8 +47,8 @@ describe('harness', () => {
     });
 
     it(parsed.test, done => {
-      const [command, ...args] = parsed.command.split(' ');
-      const serverArgs = [...parsed.server.split(' '), tmpFileHandle.name];
+      const [command, ...args] = parsed.command.split(' ').map(t => t.trim());
+      const serverArgs = [...parsed.server.split(' ').map(t => t.trim()), tmpFileHandle.name];
 
       prismMockProcessHandle = cp.spawn(path.join(__dirname, '../cli-binaries/prism-cli-linux'), serverArgs);
 
@@ -46,9 +56,11 @@ describe('harness', () => {
       prismMockProcessHandle.stdout.pipe(split2()).on('data', (line: string) => {
         if (line.includes('Prism is listening')) {
           const clientCommandHandle = cp.spawnSync(command, args, { encoding: 'utf8' });
-          expect(clientCommandHandle.stdout).toEqual(parsed.expect);
+          const output = clientCommandHandle.stdout.trim()
+          const expected = parsed.expect.trim()
+          expect(output).toMatchDiffSnapshot(expected);
+          done();
         }
-        done();
       });
     });
   });
