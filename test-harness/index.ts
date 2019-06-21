@@ -33,9 +33,10 @@ describe('harness', () => {
       fs.writeFileSync(tmpFileHandle.name, parsed.spec, { encoding: 'utf8' });
     });
 
-    afterAll(() => tmpFileHandle.removeCallback());
+    afterAll(() => tmpFileHandle.removeCallback(undefined, undefined, undefined, undefined));
 
-    it(parsed.test, done => {
+    test(parsed.test, done => {
+      expect.hasAssertions()
       const [command, ...args] = parsed.command.split(' ').map(t => t.trim());
       const serverArgs = [...parsed.server.split(' ').map(t => t.trim()), tmpFileHandle.name];
 
