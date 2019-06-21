@@ -14,12 +14,22 @@ pool:
   vmImage: $(imageName)
 
 steps:
-- task: NodeTool@0
-  inputs:
-    versionSpec: '10.x'
-  displayName: 'Install Node.js'
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '12.x'
+    displayName: 'Install Node.js'
 
-- script: |
-    yarn install
-    yarn test
-  displayName: 'Run tests'
+  - script: yarn
+    displayName: 'Install deps'
+
+  - script: npx jest
+    displayName: 'Run tests'
+
+  - script: yarn build
+    displayName: 'Build the code'
+
+  - script: npx pkg --output ./cli-binaries/prism-cli-linux ./packages/cli/
+    displayName: 'Create binary'
+
+  - script: yarn test.harness
+    displayName: 'Run harness'
