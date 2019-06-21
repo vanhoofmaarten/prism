@@ -3,17 +3,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as tmp from 'tmp';
 import * as cp from 'child_process';
-import { toMatchDiffSnapshot } from 'snapshot-diff'
 import split2 = require('split2');
-import * as os from 'os'
+import { validate } from 'gavel'
+import { parseResponse } from 'http-string-parser'
 
-const SNAPSHOT_TITLE = 'Snapshot Diff:\n';
-
-expect.extend({ toMatchDiffSnapshot })
-expect.addSnapshotSerializer({
-  print: (value: string) => value.split(os.EOL).filter(t => !t.includes('Date')).join(os.EOL),
-  test: (value: unknown) => typeof value === 'string' && value.indexOf(SNAPSHOT_TITLE) === 0
-});
 jest.setTimeout(60000)
 
 describe('harness', () => {
@@ -56,9 +49,11 @@ describe('harness', () => {
       prismMockProcessHandle.stdout.pipe(split2()).on('data', (line: string) => {
         if (line.includes('Prism is listening')) {
           const clientCommandHandle = cp.spawnSync(command, args, { encoding: 'utf8' });
-          const output = clientCommandHandle.stdout.trim()
-          const expected = parsed.expect.trim()
-          expect(output).toMatchDiffSnapshot(expected);
+          const output = parseResponse(clientCommandHandle.stdout.trim())
+          const expected = parseResponse(parsed.expect.trim())
+
+          expect(validate(expected, output).isValid).toBeTruthy();
+
           done();
         }
       });
