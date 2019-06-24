@@ -48,10 +48,11 @@ describe('harness', () => {
       prismMockProcessHandle.stdout.pipe(split2()).on('data', (line: string) => {
         if (line.includes('Prism is listening')) {
           const clientCommandHandle = cp.spawnSync(command, args, { encoding: 'utf8' });
-          const output = parseResponse(clientCommandHandle.stdout.trim());
-          const expected = parseResponse(parsed.expect.trim());
+          const output: any = parseResponse(clientCommandHandle.stdout.trim());
+          const expected: any = parseResponse(parsed.expect.trim());
 
           expect(validate(expected, output).isValid).toBeTruthy();
+          expect(expected.body).toEqual(output.body)
 
           prismMockProcessHandle.kill();
           prismMockProcessHandle.on('exit', done);
