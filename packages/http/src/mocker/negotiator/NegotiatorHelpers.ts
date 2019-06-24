@@ -26,12 +26,12 @@ function hasContents(v: IHttpOperationResponse): v is PickRequired<IHttpOperatio
 
 function findBestHttpContentByMediaType(
   response: PickRequired<IHttpOperationResponse, 'contents'>,
-  mediaType: string[],
+  mediaTypes: string[],
 ): IMediaTypeContent | undefined {
   return response.contents.find(content =>
     accepts({
       headers: {
-        accept: mediaType.join(','),
+        accept: mediaTypes.join(','),
       },
     }).type(content.mediaType),
   );

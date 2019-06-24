@@ -22,9 +22,7 @@ async function instantiatePrism(specPath: string) {
   return server;
 }
 
-// Note that these test cases cover the situation describe in https://stoplightio.atlassian.net/browse/SO-265
-// The way this works is purely judgemental right now and that ticket is meant to figure out the right way.
-describe.only('given spec with operations with and without content', () => {
+describe('given spec with operations with and without content', () => {
   let server: IPrismHttpServer<{}>;
 
   beforeAll(async () => {
