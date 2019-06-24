@@ -51,11 +51,16 @@ describe('harness', () => {
           const output: any = parseResponse(clientCommandHandle.stdout.trim());
           const expected: any = parseResponse(parsed.expect.trim());
 
-          expect(validate(expected, output).isValid).toBeTruthy();
-          expect(expected.body).toEqual(output.body)
-
+          try {
+            expect(validate(expected, output).isValid).toBeTruthy();
+            expect(expected.body).toEqual(output.body)
+          } catch (e) {
+            prismMockProcessHandle.kill();
+            return prismMockProcessHandle.on('exit', () => done(e));
+          }
           prismMockProcessHandle.kill();
           prismMockProcessHandle.on('exit', done);
+
         }
       });
     });
