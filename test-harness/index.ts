@@ -36,7 +36,6 @@ describe('harness', () => {
     afterAll(() => tmpFileHandle.removeCallback(undefined, undefined, undefined, undefined));
 
     test(parsed.test, done => {
-      expect.hasAssertions()
       const [command, ...args] = parsed.command.split(' ').map(t => t.trim());
       const serverArgs = [...parsed.server.split(' ').map(t => t.trim()), tmpFileHandle.name];
 
@@ -48,13 +47,20 @@ describe('harness', () => {
       prismMockProcessHandle.stdout.pipe(split2()).on('data', (line: string) => {
         if (line.includes('Prism is listening')) {
           const clientCommandHandle = cp.spawnSync(command, args, { encoding: 'utf8' });
-          const output = parseResponse(clientCommandHandle.stdout.trim());
-          const expected = parseResponse(parsed.expect.trim());
+          const output: any = parseResponse(clientCommandHandle.stdout.trim());
+          const expected: any = parseResponse(parsed.expect.trim());
 
-          expect(validate(expected, output).isValid).toBeTruthy();
-
+          try {
+            expect(validate(expected, output).isValid).toBeTruthy();
+            if (parsed.expect)
+              expect(expected.body).toEqual(output.body)
+          } catch (e) {
+            prismMockProcessHandle.kill();
+            return prismMockProcessHandle.on('exit', () => done(e));
+          }
           prismMockProcessHandle.kill();
           prismMockProcessHandle.on('exit', done);
+
         }
       });
     });

@@ -75,9 +75,11 @@ describe('GET /pet with invalid body', () => {
     });
 
     expect(response.statusCode).toBe(422);
-    expect(response.payload).toEqual(
-      '{"type":"https://stoplight.io/prism/errors#UNPROCESSABLE_ENTITY","title":"Invalid request body payload","status":422,"detail":"Your request body is not valid: [{\\"path\\":[\\"body\\"],\\"code\\":\\"type\\",\\"message\\":\\"should be object\\",\\"severity\\":0}]"}',
-    );
+    const parsed = JSON.parse(response.payload);
+    expect(parsed).toMatchObject({
+      type: 'https://stoplight.io/prism/errors#UNPROCESSABLE_ENTITY',
+      validation: [{ location: ['body'], severity: 'Error', code: 'type', message: 'should be object' }],
+    });
     await server.fastify.close();
   });
 });
@@ -304,8 +306,12 @@ describe.each([['petstore.oas2.json'], ['petstore.oas3.json']])('server %s', fil
       });
 
       expect(response.statusCode).toBe(404);
-      expect(response.payload).toEqual(
-        '{"type":"https://stoplight.io/prism/errors#NO_SERVER_MATCHED_ERROR","title":"Route not resolved, no server matched.","status":404,"detail":"The server url https://google.com hasn\'t been matched with any of the provided servers"}',
+      const parsed = JSON.parse(response.payload);
+
+      expect(parsed).toHaveProperty('type', 'https://stoplight.io/prism/errors#NO_SERVER_MATCHED_ERROR');
+      expect(parsed).toHaveProperty(
+        'detail',
+        "The server url https://google.com hasn't been matched with any of the provided servers",
       );
     });
 

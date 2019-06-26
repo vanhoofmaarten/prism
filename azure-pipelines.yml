@@ -28,11 +28,11 @@ steps:
   - script: yarn build
     displayName: 'Build the code'
 
-  - script: npx pkg --output ./cli-binaries/prism ./packages/cli/
+  - script: npx pkg --output ./cli-binaries/prism-cli-linux ./packages/cli/
     displayName: 'Create binary'
 
   - script: yarn test.harness
     displayName: 'Run harness'
 
-  - publish: --output ./cli-binaries/prism
+  - publish: ./cli-binaries/prism-cli-linux
     artifact: prism
