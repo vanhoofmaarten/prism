@@ -40,7 +40,7 @@ describe('harness', () => {
       const serverArgs = [...parsed.server.split(' ').map(t => t.trim()), tmpFileHandle.name];
 
       prismMockProcessHandle = cp.spawn(
-        path.join(__dirname, '../cli-binaries/prism-cli-linux'),
+        path.join(__dirname, '../cli-binaries/prism-cli'),
         serverArgs
       );
 
