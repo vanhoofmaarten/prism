@@ -1,11 +1,8 @@
-pr:
-  - master
-
 jobs:
   - job: test
     displayName: Test
     pool:
-      vmImage: vs2017-win2016    
+      vmImage: vs2017-win2016
     steps:
       - task: NodeTool@0
         inputs:
