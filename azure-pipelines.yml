@@ -8,10 +8,9 @@ jobs:
         inputs:
           versionSpec: '12.x'
         displayName: 'Install Node.js'
-
       - powershell: | # Not that cool, but it does the job.
          $ver = $env:BUILD_SOURCEBRANCH.remove(0, 10)
-         Write-Host "##vso[task.setvariable variable=Tag]$ver"
+         Write-Host "##vso[task.setvariable variable=Tag;isOutput=true]$ver"
         displayName: 'Update version to Tag'
         condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
 
@@ -35,11 +34,9 @@ jobs:
   - job: publish
     dependsOn: test
     displayName: Publish binary
-    condition: not(eq(variables['Tag'], Null))
+    condition: not(eq(variables['Tag'], 'null'))
     pool:
       vmImage: vs2017-win2016
 
     steps:
-      - task: GitHubRelease@0
-        githubConnection: vncz    
-        action: edit
+      - script: etucapio
