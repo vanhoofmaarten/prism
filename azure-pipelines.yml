@@ -23,11 +23,14 @@ jobs:
       - script: yarn build
         displayName: 'Build the code'
 
-      - script: npx pkg --output $(Build.ArtifactStagingDirectory)/prism-cli ./packages/cli/
+      - script: npx pkg --output ./cli-binaries/prism-cli ./packages/cli/
         displayName: 'Create binary'
 
       - script: yarn test.harness
         displayName: 'Run harness'
+
+      - script: cp ./cli-binaries/prism-cli $(Build.ArtifactStagingDirectory)
+        displayName: 'Copy binary in the special Azure directory'
 
       - publish: $(Build.ArtifactStagingDirectory)
         artifact: $(imageName)
