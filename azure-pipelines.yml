@@ -12,6 +12,7 @@ jobs:
          $ver = $env:BUILD_SOURCEBRANCH.remove(0, 10)
          Write-Host "##vso[task.setvariable variable=Tag;isOutput=true]$ver"
         displayName: 'Update version to Tag'
+        name: setTag
         condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
 
       - script: yarn
@@ -29,17 +30,23 @@ jobs:
       - script: yarn test.harness
         displayName: 'Run harness'
 
-      - script: cp ./cli-binaries/prism-cli $(Build.ArtifactStagingDirectory)
+      - script: cp ./cli-binaries/prism-cli.exe $(Build.ArtifactStagingDirectory)/prism-cli-win.exe
         displayName: 'Copy binary in the special Azure directory'
 
       - publish: $(Build.ArtifactStagingDirectory)
-        artifact: $(imageName)
+        artifact: prism-cli-win.exe
   - job: publish
+    variables:
+      Tag: $[ dependencies.test.outputs['setTag.Tag'] ]
     dependsOn: test
     displayName: Publish binary
-    condition: not(eq(variables['Tag'], 'null'))
+    condition: not(eq(coalesce(variables['Tag'], ''), ''))
     pool:
       vmImage: vs2017-win2016
 
     steps:
-      - script: etucapio
+      - task: GitHubRelease@0
+        inputs:
+          gitHubConnection: spartacusroboticus
+          action: 'edit'
+          tag: variables['Build.Tag']
