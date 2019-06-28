@@ -9,7 +9,7 @@ jobs:
           versionSpec: '12.x'
         displayName: 'Install Node.js'
 
-      - powershell: |
+      - powershell: | # Not that cool, but it does the job.
          $ver = $env:BUILD_SOURCEBRANCH.remove(0, 10)
          Write-Host "##vso[task.setvariable variable=Tag]$ver"
         displayName: 'Update version to Tag'
@@ -35,7 +35,7 @@ jobs:
   - job: publish
     dependsOn: test
     displayName: Publish binary
-    condition: not(eq(Tag, Null))
+    condition: not(eq(variables['Tag'], 'Null'))
     pool:
       vmImage: vs2017-win2016
 
