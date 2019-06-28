@@ -24,22 +24,22 @@ jobs:
       - script: yarn build
         displayName: 'Build the code'
 
-      - script: npx pkg --output ./cli-binaries/prism-cli ./packages/cli/
+      - script: npx pkg --output $(Build.ArtifactStagingDirectory)/prism-cli ./packages/cli/
         displayName: 'Create binary'
 
       - script: yarn test.harness
         displayName: 'Run harness'
 
-      - publish: $(Build.SourcesDirectory)/cli-binaries
+      - publish: $(Build.ArtifactStagingDirectory)
         artifact: $(imageName)
   - job: publish
     dependsOn: test
     displayName: Publish binary
-    condition: not(eq(variables['Tag'], 'Null'))
+    condition: not(eq(variables['Tag'], Null))
     pool:
       vmImage: vs2017-win2016
 
     steps:
-      - script: go get github.com/tcnksm/ghr
-        displayName: Install publish tool
-
+      - task: GitHubRelease@0
+        githubConnection: vncz    
+        action: edit
