@@ -1,38 +1,48 @@
-strategy:
-  matrix:
-    linux:
-      imageName: 'ubuntu-16.04'
-    mac:
-      imageName: 'macOS-10.14'
-    windows:
-      imageName: 'vs2017-win2016'
-
 pr:
   - master
 
-pool:
-  vmImage: $(imageName)
+jobs:
+  - job: test
+    displayName: Test
+    pool:
+      vmImage: vs2017-win2016    
+    steps:
+      - task: NodeTool@0
+        inputs:
+          versionSpec: '12.x'
+        displayName: 'Install Node.js'
 
-steps:
-  - task: NodeTool@0
-    inputs:
-      versionSpec: '12.x'
-    displayName: 'Install Node.js'
+      - powershell: |
+         $ver = $env:BUILD_SOURCEBRANCH.remove(0, 10)
+         Write-Host "##vso[task.setvariable variable=Tag]$ver"
+        displayName: 'Update version to Tag'
+        condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
 
-  - script: yarn
-    displayName: 'Install deps'
+      - script: yarn
+        displayName: 'Install deps'
 
-  - script: npx jest
-    displayName: 'Run tests'
+      - script: npx jest
+        displayName: 'Run tests'
 
-  - script: yarn build
-    displayName: 'Build the code'
+      - script: yarn build
+        displayName: 'Build the code'
 
-  - script: npx pkg --output ./cli-binaries/prism-cli ./packages/cli/
-    displayName: 'Create binary'
+      - script: npx pkg --output ./cli-binaries/prism-cli ./packages/cli/
+        displayName: 'Create binary'
 
-  - script: yarn test.harness
-    displayName: 'Run harness'
+      - script: yarn test.harness
+        displayName: 'Run harness'
 
-  - publish: $(Build.SourcesDirectory)/cli-binaries
-    artifact: $(imageName)
+      - publish: $(Build.SourcesDirectory)/cli-binaries
+        artifact: $(imageName)
+  - job: publish
+    dependsOn: test
+    displayName: Publish binary
+    condition: not(eq(Tag, Null))
+    pool:
+      vmImage: vs2017-win2016
+
+    steps:
+      - script: go get github.com/tcnksm/ghr
+        displayName: Install publish tool
+
