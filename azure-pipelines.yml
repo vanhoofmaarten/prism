@@ -8,7 +8,7 @@ jobs:
         inputs:
           versionSpec: '12.x'
         displayName: 'Install Node.js'
-      - powershell: | # Not that cool, but it does the job.
+      - powershell: |
          $ver = $env:BUILD_SOURCEBRANCH.remove(0, 10)
          Write-Host "##vso[task.setvariable variable=Tag;isOutput=true]$ver"
         displayName: 'Update version to Tag'
