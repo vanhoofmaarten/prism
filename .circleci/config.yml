@@ -51,7 +51,7 @@ jobs:
             DOCKERIZE_VERSION: v0.6.1
       - run:
           name: Create Linux CLI binary
-          command: HOST=host yarn build.binary
+          command: yarn build.binary
       - run:
           name: Run Harness
           command: yarn test.harness
