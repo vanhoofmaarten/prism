@@ -16,9 +16,42 @@ When the negotiator has sorted out the response to return to the client and has 
 
 Both Dynamic and Static generation almost follow the same path, which forks in the final behaviour in case anything else fails.
 
+## Static Example Generation
 
-## Use the Faker extension for more meaningful examples
+1. If the provided JSON Schema has an example for the whole object, it will return such value (or the first one in case it is an array)
+2. If not, for each property
+  * If the property has a default value, then it will return the specified value (or the first one in case it's an array)
+  * If the property has an example value, then it will return the specified value (or the first one in case it's an array)
+  * If the property has nor an example or a default value and it's **nullable**, it will return null
+  * If the property has nor an example or a default value and it's **not** nullable, and has a `format` specified it will return a meaningful static value according to the format
+  * If the property has nor an example or a default value and it's **not** nullable, and has not a `format` specified it will return `'string'` in case of a number and `0` in case of a string
 
-In case you're using dynamic examples, you can instruct with a simple extension what kind of data you're looking for, even if the official JSON Schema does not support such values.
+## Dynamic Example Generation
+
+Prism will generate a random value for all the properties according to the type, regardless of the examples presence or not. You will still be able to manually select a specific example you want to get back in case it's required through the `__example` query parameter. All the generated properties will take in consideration the `format` property, in case it's provided.
+
+### Use the Faker extension for more meaningful examples
+
+In case you're using dynamic examples, you can instruct with a simple extension what kind of data you're looking for, even if the official JSON Schema does not support such values, using the `x-faker` property.
+
+You can use any of the [supported API Methods][fakerjs]
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "ip": {
+      "type": "string",
+      "format": "ipv4",
+    }
+  },
+  "required": [
+    "ip"
+  ]
+}
+```
+
+This will make sure Prims will generate random ip addresses instead of strings
 
 [diagram]: ./packages/http/docs/images/mock-server-dfd.png
+[fakerjs]: https://github.com/marak/Faker.js/
