@@ -1,4 +1,8 @@
 version: 2
+
+orbs:
+  stoplight: stoplight/cli@0.0.1
+
 jobs:
   build:
     docker:
@@ -124,3 +128,9 @@ workflows:
             - build
             - harness
             - publish
+      - stoplight/analyze:
+          filters:
+            branches:
+              only:
+                - master
+                - ENG-293_analyze
