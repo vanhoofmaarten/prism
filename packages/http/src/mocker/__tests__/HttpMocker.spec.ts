@@ -182,7 +182,7 @@ describe('HttpMocker', () => {
           ),
         );
 
-        jest.spyOn(JSONSchemaGenerator, 'generate').mockReturnValue('example value chelsea');
+        jest.spyOn(JSONSchemaGenerator, 'generate').mockReturnValue(() => 'example value chelsea');
 
         const mockResult = httpMocker
           .mock({
@@ -198,7 +198,7 @@ describe('HttpMocker', () => {
     describe('when an example is defined', () => {
       describe('and dynamic flag is true', () => {
         describe('should generate a dynamic response', () => {
-          const generatedExample = { hello: 'world' };
+          const generatedExample = () => ({ hello: 'world' });
 
           beforeAll(() => {
             jest.spyOn(JSONSchemaGenerator, 'generate').mockReturnValue(generatedExample);

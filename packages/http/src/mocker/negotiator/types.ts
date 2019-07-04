@@ -1,6 +1,6 @@
 import { IHttpHeaderParam } from '@stoplight/types';
 import { ContentExample } from '../../';
-import { IHttpOperationConfig, JSONSchema } from '../../';
+import { IHttpOperationConfig, IHttpOperationDynamicConfig, JSONSchema } from '../../';
 
 export interface IHttpNegotiationResult {
   code: string;
@@ -14,6 +14,6 @@ export type NegotiationOptions = IHttpOperationConfig;
 
 export type NegotiatePartialOptions = {
   code: string;
-  dynamic: boolean;
+  dynamic: boolean | IHttpOperationDynamicConfig;
   exampleKey?: string;
 };
