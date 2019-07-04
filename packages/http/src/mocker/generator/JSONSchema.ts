@@ -1,27 +1,37 @@
 import * as faker from 'faker';
 import { cloneDeep } from 'lodash';
-import { JSONSchema } from '../../types';
+import { IHttpOperationDynamicConfig, IJsonSchemaFakerOptions, JSONSchema, PayloadGenerator } from '../../types';
 
 // @ts-ignore
 import * as jsf from 'json-schema-faker';
 // @ts-ignore
 import * as sampler from 'openapi-sampler';
 
-jsf.extend('faker', () => faker);
+export function generate(config: IHttpOperationDynamicConfig = {}): PayloadGenerator {
+  const { customFormats, extensions, options } = config;
 
-jsf.option({
-  failOnInvalidTypes: false,
-  failOnInvalidFormat: false,
-  alwaysFakeOptionals: true,
-  optionalsProbability: 1,
-  fixedProbabilities: true,
-  ignoreMissingRefs: true,
-  maxItems: 20,
-  maxLength: 100,
-});
+  if (customFormats) customFormats.forEach(({ keyword, value }) => jsf.format(keyword, value));
+  if (extensions) extensions.forEach(({ keyword, value }) => jsf.extend(keyword, value));
 
-export function generate(source: JSONSchema): unknown {
-  return jsf.generate(cloneDeep(source));
+  const jsfDefaultOptions: IJsonSchemaFakerOptions = {
+    failOnInvalidTypes: false,
+    failOnInvalidFormat: false,
+    alwaysFakeOptionals: true,
+    optionalsProbability: 1,
+    fixedProbabilities: true,
+    ignoreMissingRefs: true,
+    maxItems: 20,
+    maxLength: 100,
+  };
+
+  jsf.extend('faker', () => faker);
+
+  jsf.option({
+    ...jsfDefaultOptions,
+    options,
+  });
+
+  return (source: JSONSchema): unknown => jsf.generate(cloneDeep(source));
 }
 
 export function generateStatic(source: JSONSchema): unknown {

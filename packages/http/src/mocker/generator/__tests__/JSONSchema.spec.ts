@@ -1,5 +1,5 @@
 import { get } from 'lodash';
-import { JSONSchema } from '../../../types';
+import { IHttpOperationDynamicConfig, JSONSchema } from '../../../types';
 import { generate } from '../JSONSchema';
 
 describe('JSONSchema generator', () => {
@@ -7,6 +7,56 @@ describe('JSONSchema generator', () => {
   const emailRegExp = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
   describe('generate()', () => {
+    describe('when used with a schema with a custom format', () => {
+      const schema: JSONSchema = {
+        type: 'object',
+        properties: {
+          name: { type: 'string', minLength: 1, format: 'name' },
+        },
+        required: ['name'],
+      };
+
+      const config: IHttpOperationDynamicConfig = {
+        customFormats: [{ keyword: 'name', value: () => 'this is a name' }],
+      };
+
+      it('will have be formatted by the custom ', () => {
+        const instance = generate(config)(schema);
+        expect(instance).toHaveProperty('name');
+        const name = get(instance, 'name');
+
+        expect(name).toBe('this is a name');
+      });
+    });
+
+    describe('when used with a schema with a custom extension', () => {
+      const schema: JSONSchema = {
+        type: 'object',
+        properties: {
+          multiplication: { type: 'string', minLength: 1, 'x-custom-extension': 'multiplication' },
+        },
+        required: ['multiplication'],
+      };
+
+      const multiplication = () => (3 * 5) / 30;
+
+      const config: IHttpOperationDynamicConfig = {
+        extensions: [
+          {
+            keyword: 'custom-extension',
+            value: multiplication,
+          },
+        ],
+      };
+
+      it('will have the result of the custom extension', () => {
+        const instance = generate(config)(schema);
+        expect(instance).toHaveProperty('multiplication');
+        const property = get(instance, 'multiplication');
+        expect(property).toBe(multiplication().toString());
+      });
+    });
+
     describe('when used with a schema with a simple string property', () => {
       const schema: JSONSchema = {
         type: 'object',
@@ -17,7 +67,7 @@ describe('JSONSchema generator', () => {
       };
 
       it('will have a string property not matching anything in particular', () => {
-        const instance = generate(schema);
+        const instance = generate()(schema);
         expect(instance).toHaveProperty('name');
         const name = get(instance, 'name');
 
@@ -36,7 +86,7 @@ describe('JSONSchema generator', () => {
       };
 
       it('will have a string property matching the email regex', () => {
-        const instance = generate(schema);
+        const instance = generate()(schema);
         expect(instance).toHaveProperty('email');
         const email = get(instance, 'email');
 
@@ -55,7 +105,7 @@ describe('JSONSchema generator', () => {
       };
 
       it('will have a string property matching the ip regex', () => {
-        const instance = generate(schema);
+        const instance = generate()(schema);
         expect(instance).toHaveProperty('ip');
         const ip = get(instance, 'ip');
 
@@ -75,7 +125,7 @@ describe('JSONSchema generator', () => {
 
       Object.defineProperty(schema.properties, 'name', { writable: false });
 
-      return expect(generate(schema)).toBeTruthy();
+      return expect(generate()(schema)).toBeTruthy();
     });
   });
 });

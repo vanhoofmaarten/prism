@@ -29,7 +29,11 @@ export class HttpMocker
     config,
   }: IMockerOpts<IHttpOperation, IHttpRequest, IHttpConfig>): Reader<Logger, Either<Error, IHttpResponse>> {
     const payloadGenerator: PayloadGenerator =
-      config && typeof config.mock !== 'boolean' && config.mock.dynamic ? generate : generateStatic;
+      config && typeof config.mock !== 'boolean' && config.mock.dynamic
+        ? typeof config.mock.dynamic !== 'boolean'
+          ? generate(config.mock.dynamic)
+          : generate()
+        : generateStatic;
 
     return withLogger(logger => {
       // setting default values

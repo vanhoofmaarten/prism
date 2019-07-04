@@ -18,11 +18,51 @@ export type TPrismHttpComponents<LoaderInput> = Partial<
 // TODO: should be complete | and in the @stoplight/types repo
 export type IHttpMethod = HttpMethod | 'trace';
 
+// TODO: Replace with official JSON Schema Faker types
+// https://github.com/json-schema-faker/json-schema-faker/issues/516
+export interface IJsonSchemaFakerOptions {
+  defaultInvalidTypeProduct?: string | null;
+  defaultRandExpMax?: number;
+  ignoreProperties?: string[];
+  ignoreMissingRefs?: boolean;
+  failOnInvalidTypes?: boolean;
+  failOnInvalidFormat?: boolean;
+  alwaysFakeOptionals?: boolean;
+  optionalsProbability?: number;
+  fixedProbabilities?: boolean;
+  useExamplesValue?: boolean;
+  useDefaultValue?: boolean;
+  requiredOnly?: boolean;
+  minItems?: number;
+  maxItems?: number | null;
+  minLength?: number;
+  maxLength?: number | null;
+  resolveJsonPath?: boolean;
+  reuseProperties?: boolean;
+  fillProperties?: boolean;
+  random?: Function;
+}
+
+export interface IJsonSchemaFakerNullableExtension {
+  keyword: string;
+  value: any;
+}
+
+export interface IJsonSchemaFakerExtension extends IJsonSchemaFakerNullableExtension {
+  value: Function;
+}
+
+export interface IHttpOperationDynamicConfig {
+  options?: IJsonSchemaFakerOptions;
+  customFormats?: IJsonSchemaFakerNullableExtension[];
+  extensions?: IJsonSchemaFakerExtension[];
+}
+
 export interface IHttpOperationConfig {
   mediaTypes?: string[];
   code?: string;
   exampleKey?: string;
-  dynamic: boolean;
+  dynamic: boolean | IHttpOperationDynamicConfig;
 }
 
 export interface IHttpConfig extends IPrismConfig {
