@@ -1,10 +1,5 @@
 # prism-cli
 
-[![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
-[![Version](https://img.shields.io/npm/v/prism-cli.svg)](https://npmjs.org/package/@stoplight/prism-cli)
-[![Downloads/week](https://img.shields.io/npm/dw/prism-cli.svg)](https://npmjs.org/package/@stoplight/prism-cli)
-[![License](https://img.shields.io/npm/l/prism-cli.svg)](https://github.com/stoplightio/prism/blob/master/package.json)
-
 <!-- toc -->
 * [prism-cli](#prism-cli)
 * [Usage](#usage)
@@ -19,7 +14,7 @@ $ npm install -g @stoplight/prism-cli
 $ prism COMMAND
 running command...
 $ prism (-v|--version|version)
-@stoplight/prism-cli/3.0.0-beta.6 darwin-x64 node-v12.6.0
+@stoplight/prism-cli/3.0.1 darwin-x64 node-v12.6.0
 $ prism --help [COMMAND]
 USAGE
   $ prism COMMAND
@@ -67,8 +62,6 @@ OPTIONS
   -m, --multiprocess  Fork the http server from the CLI
   -p, --port=port     (required) [default: 4010] Port that Prism will run on.
 ```
-
-_See code: [dist/commands/mock.ts](https://github.com/stoplightio/prism/blob/v3.0.0-beta.6/dist/commands/mock.ts)_
 <!-- commandsstop -->
 
 ## Running in production
