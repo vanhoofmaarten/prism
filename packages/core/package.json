@@ -1,6 +1,6 @@
 {
   "name": "@stoplight/prism-core",
-  "version": "3.0.1",
+  "version": "3.0.3",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "author": "Stoplight <support@stoplight.io>",
@@ -16,8 +16,6 @@
     "node": ">=8"
   },
   "dependencies": {
-    "@stoplight/graphite": "^8.4.2",
-    "axios": "^0.18.0",
     "lodash": "^4.17.14",
     "mobx": "^5.11.0",
     "pino": "^5.12.6",

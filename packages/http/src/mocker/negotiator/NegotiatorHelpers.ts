@@ -1,13 +1,13 @@
 import { Either, left, map, right } from 'fp-ts/lib/Either';
 import { pipe } from 'fp-ts/lib/pipeable';
-import { chain, reader } from 'fp-ts/lib/Reader';
-import { mapLeft, orElse, ReaderEither } from 'fp-ts/lib/ReaderEither';
+import { chain } from 'fp-ts/lib/Reader';
+import { left as releft, mapLeft, orElse, ReaderEither } from 'fp-ts/lib/ReaderEither';
 import { Logger } from 'pino';
 
 import { ProblemJsonError } from '@stoplight/prism-core';
 import { IHttpOperation, IHttpOperationResponse, IMediaTypeContent } from '@stoplight/types';
 import withLogger from '../../withLogger';
-import { NOT_ACCEPTABLE } from '../errors';
+import { NOT_ACCEPTABLE, NOT_FOUND } from '../errors';
 import {
   contentHasExamples,
   createResponseFromDefault,
@@ -40,7 +40,12 @@ const helpers = {
           bodyExample: example,
         });
       } else {
-        return left(new Error(`Response for contentType: ${mediaType} and exampleKey: ${exampleKey} does not exist.`));
+        return left(
+          ProblemJsonError.fromTemplate(
+            NOT_FOUND,
+            `Response for contentType: ${mediaType} and exampleKey: ${exampleKey} does not exist.`,
+          ),
+        );
       }
     } else if (dynamic === true) {
       if (httpContent.schema) {
@@ -176,7 +181,7 @@ const helpers = {
       return helpers.negotiateOptionsBySpecificResponse(httpOperation, desiredOptions, lowest2xxResponse);
     }
 
-    return reader.of(left(new Error('No 2** response defined, cannot mock')));
+    return releft(new Error('No 2** response defined, cannot mock'));
   },
 
   negotiateOptionsBySpecificCode(
@@ -211,7 +216,9 @@ const helpers = {
         return withLogger(logger => {
           logger.trace(`Unable to find default response to construct a ${code} response`);
           // if no response found under a status code throw an error
-          return left(new Error('Requested status code is not defined in the schema.'));
+          return left(
+            ProblemJsonError.fromTemplate(NOT_FOUND, `Requested status code ${code} is not defined in the document.`),
+          );
         });
       }),
     );
