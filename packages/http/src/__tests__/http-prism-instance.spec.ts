@@ -128,7 +128,7 @@ describe('Http Client .process', () => {
     });
 
     describe('mocking is off', () => {
-      const config: IHttpConfig = { mock: false };
+      const config: IHttpConfig = { mock: false, cors: false, validateRequest: true, validateResponse: true };
       const baseUrl = 'http://stoplight.io';
       const serverReply = 'hello world';
 
@@ -158,7 +158,7 @@ describe('Http Client .process', () => {
             {
               code: 404,
               source: 'https://stoplight.io/prism/errors#NO_PATH_MATCHED_ERROR',
-              message: 'Route not resolved, no path matched.',
+              message: 'Route not resolved, no path matched',
               severity: DiagnosticSeverity.Warning,
             },
           ]);
