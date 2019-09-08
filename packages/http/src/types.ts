@@ -34,19 +34,25 @@ export interface IJsonSchemaFakerOptions {
   random?: Function;
 }
 
-export interface IJsonSchemaFakerNullableExtension {
-  keyword: string;
-  value: any;
-}
+export type IOpenAPIPrimitive = string | number | boolean;
 
-export interface IJsonSchemaFakerExtension extends IJsonSchemaFakerNullableExtension {
-  value: Function;
+export interface ISpecificationExtensionValueArray extends Array<ISpecificationExtensionValue> {}
+export interface ISpecificationExtensionValueObject {
+  [key: string]: ISpecificationExtensionValue;
 }
+export type ISpecificationExtensionValue =
+  | null
+  | IOpenAPIPrimitive
+  | ISpecificationExtensionValueArray
+  | ISpecificationExtensionValueObject;
+
+export type IJsonSchemaFakerCustomGenerator = (value: ISpecificationExtensionValue) => any;
 
 export interface IHttpOperationDynamicConfig {
   options?: IJsonSchemaFakerOptions;
-  customFormats?: IJsonSchemaFakerNullableExtension[];
-  extensions?: IJsonSchemaFakerExtension[];
+  customFormats?: { [keyword: string]: number | string | Function };
+  externalGenerators?: { [keyword: string]: Function };
+  customGenerators?: { [keyword: string]: number | string | IJsonSchemaFakerCustomGenerator };
 }
 
 export interface IHttpOperationConfig {

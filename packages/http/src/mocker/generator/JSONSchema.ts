@@ -8,10 +8,7 @@ import * as jsf from 'json-schema-faker';
 import * as sampler from 'openapi-sampler';
 
 export function generate(config: IHttpOperationDynamicConfig = {}): PayloadGenerator {
-  const { customFormats, extensions, options } = config;
-
-  if (customFormats) customFormats.forEach(({ keyword, value }) => jsf.format(keyword, value));
-  if (extensions) extensions.forEach(({ keyword, value }) => jsf.extend(keyword, value));
+  const { customGenerators, customFormats, externalGenerators, options } = config;
 
   const jsfDefaultOptions: IJsonSchemaFakerOptions = {
     failOnInvalidTypes: false,
@@ -28,8 +25,35 @@ export function generate(config: IHttpOperationDynamicConfig = {}): PayloadGener
 
   jsf.option({
     ...jsfDefaultOptions,
-    options,
+    ...options,
   });
+
+  // OpenAPI Spec: https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#data-types
+  // JSON Schema Faker: https://github.com/json-schema-faker/json-schema-faker/blob/master/docs/USAGE.md#custom-formats
+  if (customFormats) {
+    Object.keys(customFormats).forEach(keyword => {
+      const value = customFormats[keyword];
+      if (typeof value === 'string' || typeof value === 'number') jsf.format(keyword, () => value);
+      if (typeof value === 'function') jsf.format(keyword, value);
+    });
+  }
+
+  // JSON Schema Faker: https://github.com/json-schema-faker/json-schema-faker/blob/master/docs/USAGE.md#extending-dependencies
+  if (externalGenerators) {
+    Object.keys(externalGenerators).forEach(keyword => {
+      const value = externalGenerators[keyword];
+      if (typeof value === 'function') jsf.extend(keyword, value);
+    });
+  }
+
+  // Allow full usage of OpenAPI Specification Extensions
+  // OpenAPI Spec: https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#specification-extensions
+  if (customGenerators) {
+    Object.keys(customGenerators).forEach(keyword => {
+      const value = customGenerators[keyword];
+      if (typeof value === 'function') jsf.define(keyword, value);
+    });
+  }
 
   return (source: JSONSchema): unknown => jsf.generate(cloneDeep(source));
 }

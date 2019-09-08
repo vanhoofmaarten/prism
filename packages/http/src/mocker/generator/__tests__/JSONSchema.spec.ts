@@ -1,5 +1,5 @@
 import { get } from 'lodash';
-import { IHttpOperationDynamicConfig, JSONSchema } from '../../../types';
+import { IHttpOperationDynamicConfig, IJsonSchemaFakerCustomGenerator, JSONSchema } from '../../../types';
 import { generate } from '../JSONSchema';
 
 describe('JSONSchema generator', () => {
@@ -7,53 +7,143 @@ describe('JSONSchema generator', () => {
   const emailRegExp = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
   describe('generate()', () => {
-    describe('when used with a schema with a custom format', () => {
+    describe('when used with a schema with a custom formats', () => {
       const schema: JSONSchema = {
         type: 'object',
         properties: {
           name: { type: 'string', minLength: 1, format: 'name' },
+          description: { type: 'string', minLength: 1, format: 'description' },
+          number: { type: 'integer', minLength: 1, format: 'fixedNumber' },
         },
         required: ['name'],
       };
 
       const config: IHttpOperationDynamicConfig = {
-        customFormats: [{ keyword: 'name', value: () => 'this is a name' }],
+        customFormats: {
+          name: 'this is a name',
+          description: () => 'this is a description',
+          fixedNumber: '100',
+        },
       };
 
-      it('will have be formatted by the custom ', () => {
+      it('will format a string value', () => {
         const instance = generate(config)(schema);
         expect(instance).toHaveProperty('name');
         const name = get(instance, 'name');
-
         expect(name).toBe('this is a name');
+      });
+
+      it('will format a function value', () => {
+        const instance = generate(config)(schema);
+        expect(instance).toHaveProperty('description');
+        const description = get(instance, 'description');
+        expect(description).toBe('this is a description');
+      });
+
+      // JSON Schema Faker doen not (yet) support custom formats
+      // on primitives on other than string types
+      it.skip('will format a number value', () => {
+        const instance = generate(config)(schema);
+        expect(instance).toHaveProperty('number');
+        const description = get(instance, 'number');
+        expect(description).toBe(100);
       });
     });
 
-    describe('when used with a schema with a custom extension', () => {
+    describe('when used with a schema with external generators', () => {
       const schema: JSONSchema = {
         type: 'object',
         properties: {
-          multiplication: { type: 'string', minLength: 1, 'x-custom-extension': 'multiplication' },
+          externalGeneratedProperty: { type: 'string', minLength: 1, 'x-external': 'generator' },
         },
-        required: ['multiplication'],
+        required: ['externalGeneratedProperty'],
       };
 
-      const multiplication = () => (3 * 5) / 30;
+      function ExternalGeneratorModule() {
+        // @ts-ignore
+        this.generator = () => 'this is a external generator';
+      }
+
+      // @ts-ignore
+      const externalGenerator = new ExternalGeneratorModule();
 
       const config: IHttpOperationDynamicConfig = {
-        extensions: [
-          {
-            keyword: 'custom-extension',
-            value: multiplication,
-          },
-        ],
+        externalGenerators: {
+          external: () => externalGenerator,
+        },
       };
 
-      it('will have the result of the custom extension', () => {
+      it('will have the result of the external generators', () => {
         const instance = generate(config)(schema);
-        expect(instance).toHaveProperty('multiplication');
-        const property = get(instance, 'multiplication');
-        expect(property).toBe(multiplication().toString());
+        expect(instance).toHaveProperty('externalGeneratedProperty');
+        const property = get(instance, 'externalGeneratedProperty');
+        expect(property).toBe(externalGenerator.generator());
+      });
+    });
+
+    // Allow full usage of OpenAPI Specification Extensions
+    // https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#specification-extensions
+    describe('when used with a schema with custom generators', () => {
+      const schema: JSONSchema = {
+        type: 'object',
+        properties: {
+          customGeneratedStringProperty: { type: 'string', minLength: 1, 'x-fnctn': '3' },
+          customGeneratedNumberProperty: { type: 'number', minLength: 1, 'x-fnctn': 3 },
+          customGeneratedBooleanProperty: { type: 'boolean', minLength: 1, 'x-fnctn': false },
+          customGeneratedArrayProperty: {
+            type: 'string',
+            minLength: 1,
+            'x-fnctn': ['this', 'is', 'an', 'array'],
+          },
+          customGeneratedObjectProperty: {
+            type: 'string',
+            minLength: 1,
+            'x-fnctn': { an: 'an', object: 'object' },
+          },
+        },
+        required: ['customGeneratedProperty'],
+      };
+
+      const fnctn: IJsonSchemaFakerCustomGenerator = value => value;
+
+      const config: IHttpOperationDynamicConfig = {
+        customGenerators: {
+          fnctn,
+        },
+      };
+
+      const instance = generate(config)(schema);
+
+      it('will have the result of the custom generated function with a string value', () => {
+        expect(instance).toHaveProperty('customGeneratedStringProperty');
+        const property = get(instance, 'customGeneratedStringProperty');
+        expect(property).toBe(fnctn('3'));
+      });
+
+      it('will have the result of the custom generated function with a number value', () => {
+        expect(instance).toHaveProperty('customGeneratedNumberProperty');
+        const property = get(instance, 'customGeneratedNumberProperty');
+        expect(property).toBe(fnctn(3));
+      });
+
+      it('will have the result of the custom generated function with a boolean value', () => {
+        expect(instance).toHaveProperty('customGeneratedBooleanProperty');
+        const property = get(instance, 'customGeneratedBooleanProperty');
+        expect(property).toBe(fnctn(false));
+      });
+
+      // JSON Schema Faker only returns strings from arrays of custom generators
+      it('will have the result of the custom generated function with an array value', () => {
+        expect(instance).toHaveProperty('customGeneratedArrayProperty');
+        const property = get(instance, 'customGeneratedArrayProperty');
+        expect(property).toBe(fnctn(['this', 'is', 'an', 'array'].toString()));
+      });
+
+      // JSON Schema Faker only returns strings from objects of custom generators
+      it('will have the result of the custom generated function with an object value', () => {
+        expect(instance).toHaveProperty('customGeneratedObjectProperty');
+        const property = get(instance, 'customGeneratedObjectProperty');
+        expect(property).toBe(fnctn({ an: 'an', object: 'object' }).toString());
       });
     });
 
