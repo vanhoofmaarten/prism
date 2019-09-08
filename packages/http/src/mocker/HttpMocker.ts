@@ -23,7 +23,7 @@ import { generate, generateStatic } from './generator/JSONSchema';
 import helpers from './negotiator/NegotiatorHelpers';
 import { IHttpNegotiationResult } from './negotiator/types';
 
-export class HttpMocker
+class HttpMocker
   implements IMocker<IHttpOperation, IHttpRequest, IHttpConfig, Reader<Logger, Either<Error, IHttpResponse>>> {
   public mock({
     resource,
@@ -41,7 +41,7 @@ export class HttpMocker
       withLogger(logger => {
         // setting default values
         const acceptMediaType = input.data.headers && caseless(input.data.headers).get('accept');
-        config = config || { mock: false, cors: false, validateRequest: true, validateResponse: true };
+        config = config || { mock: false, validateRequest: true, validateResponse: true };
         const mockConfig: IHttpOperationConfig =
           config.mock === false ? { dynamic: false } : Object.assign({}, config.mock);
 
@@ -172,3 +172,5 @@ function computeBody(
   }
   return undefined;
 }
+
+export const mocker = new HttpMocker();
