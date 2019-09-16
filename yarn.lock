@@ -1151,17 +1151,17 @@
   dependencies:
     any-observable "^0.3.0"
 
-"@stoplight/http-spec@^2.1.4":
-  version "2.1.4"
-  resolved "https://registry.yarnpkg.com/@stoplight/http-spec/-/http-spec-2.1.4.tgz#27cfdba7d2458da7499ba33a44e0d90e45daae70"
-  integrity sha512-+QyFh7XtuA+t2Ue8LD7qVfMiLCom2ZMMDMDMP9n5YekYdrb4KcS5oR8UhxsgRqjZ0jL2+bY4NKYDsZRATrkLSA==
+"@stoplight/http-spec@^2.2.2":
+  version "2.2.2"
+  resolved "https://registry.yarnpkg.com/@stoplight/http-spec/-/http-spec-2.2.2.tgz#38edc96105bfa8679eeff7ec3b32112d21aaae45"
+  integrity sha512-Bo/BIjeBe9pRr67X9tBjlhyfaBYeXmI8W9vopXmAoqgV9xT3IYkYmLyQ+4QurPst9gSflDP7BEd9CWb5UyiMlQ==
   dependencies:
     "@stoplight/json" "^3.1.1"
     "@stoplight/types" "^11.1.0"
     "@types/swagger-schema-official" "~2.0.18"
     "@types/urijs" "~1.19.1"
     lodash "^4.17.15"
-    openapi-schema-to-json-schema "2.2.0"
+    openapi-schema-to-json-schema philsturgeon/openapi-schema-to-json-schema#9692af184c6a3e3d952a88968da07491e47135fb
     openapi3-ts "~1.3.0"
     urijs "~1.19.1"
 
@@ -1179,17 +1179,7 @@
     urijs "~1.19.1"
     vscode-uri "^2.0.3"
 
-"@stoplight/json@^3.1.0":
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/@stoplight/json/-/json-3.1.0.tgz#a03bd8d065a62eb00cd42cf003df431f23d7a5dd"
-  integrity sha512-8Fev+RW+UJNYtcpDgvQPH6MuHEf5cr95KnAyMBNNXlVIeRAIJqYK3r5FWZv4/KFH08ozQy4QpMM9MdsR8J3cZQ==
-  dependencies:
-    "@stoplight/types" "^11.0.0"
-    jsonc-parser "~2.1.1"
-    lodash "^4.17.15"
-    safe-stable-stringify "^1.1"
-
-"@stoplight/json@^3.1.1":
+"@stoplight/json@^3.1.0", "@stoplight/json@^3.1.1":
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/@stoplight/json/-/json-3.1.1.tgz#531d966a62247bf2ab1e8a06a685fa62e36cf890"
   integrity sha512-DK2ufmnPvfW9Mv0q4DYtldjicTTcBY+j4kiEUOEmc9hL+mzMDV08+5ix4tmPtheUDZH6OtEqEmGcf8ZKCHFbpg==
@@ -1255,9 +1245,9 @@
   integrity sha512-6ckxMjBBD8URvjB6J3NcnuAn5Pkl7t3TizAg+xdlzzQGSPSmBcXf8KoIH0ua/i+tio+ZRUHEXp0HEmvaR4kt0w==
 
 "@types/chai@^4.2.0":
-  version "4.2.0"
-  resolved "https://registry.yarnpkg.com/@types/chai/-/chai-4.2.0.tgz#2478260021408dec32c123a7cad3414beb811a07"
-  integrity sha512-zw8UvoBEImn392tLjxoavuonblX/4Yb9ha4KBU10FirCfwgzhKO0dvyJSF9ByxV1xK1r2AgnAi/tvQaLgxQqxA==
+  version "4.2.2"
+  resolved "https://registry.yarnpkg.com/@types/chai/-/chai-4.2.2.tgz#6b825013863d04868c15624ec8b7fdced88a47c6"
+  integrity sha512-8V2aCcPM3WLuJvJpF6N60uUvdZb7NHjpjQlLk1QmZbTP4XZET/FX0c3TJ3K7qt4L98FS1Pifa8BVofTVuJFWVA==
 
 "@types/chance@^1.0.6":
   version "1.0.6"
@@ -1348,9 +1338,9 @@
     "@types/node" "*"
 
 "@types/node@*", "@types/node@^12.7.2":
-  version "12.7.3"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-12.7.3.tgz#27b3f40addaf2f580459fdb405222685542f907a"
-  integrity sha512-3SiLAIBkDWDg6vFo0+5YJyHPWU9uwu40Qe+v+0MH8wRKYBimHvvAOyk3EzMrD/TrIlLYfXrqDqrg913PynrMJQ==
+  version "12.7.4"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-12.7.4.tgz#64db61e0359eb5a8d99b55e05c729f130a678b04"
+  integrity sha512-W0+n1Y+gK/8G2P/piTkBBN38Qc5Q1ZSO6B5H3QmPCUewaiXOo2GCAWZ4ElZCcNhjJuBSUSLGFUJnmlCn5+nxOQ==
 
 "@types/normalize-package-data@^2.4.0":
   version "2.4.0"
@@ -2593,7 +2583,7 @@ deep-eql@^3.0.1:
   dependencies:
     type-detect "^4.0.0"
 
-deep-equal@1.1.0, deep-equal@^1.0.0, deep-equal@^1.0.1:
+deep-equal@1.1.0, deep-equal@^1.0.1:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/deep-equal/-/deep-equal-1.1.0.tgz#3103cdf8ab6d32cf4a8df7865458f2b8d33f3745"
   integrity sha512-ZbfWJq/wN1Z273o7mUSjILYqehAktR2NVoSrOukDkU9kg2v/Uv89yU4Cvz8seJeAmtN5oqiefKq8FPuXOboqLw==
@@ -2726,6 +2716,14 @@ dezalgo@^1.0.0:
   dependencies:
     asap "^2.0.0"
     wrappy "1"
+
+diff-js-xml@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/diff-js-xml/-/diff-js-xml-1.0.5.tgz#13c28dc2f9fc616fe82640a19512181b030c24f0"
+  integrity sha512-XFjXw5jhRGhVu7ihmKSHunPpFLmB4WLzncg4a0ioc4GqUcTHBLmVyoKkbyYbN543nbQveOqKVrFiXsC0t8RiOA==
+  dependencies:
+    underscore "^1.9.1"
+    xml-js "^1.6.8"
 
 diff-sequences@^24.9.0:
   version "24.9.0"
@@ -5386,7 +5384,7 @@ lodash.uniq@^4.5.0:
   resolved "https://registry.yarnpkg.com/lodash.uniq/-/lodash.uniq-4.5.0.tgz#d0225373aeb652adc1bc82e4945339a842754773"
   integrity sha1-0CJTc662Uq3BvILklFM5qEJ1R3M=
 
-lodash@^4.17.11, lodash@^4.17.14, lodash@^4.17.15, lodash@^4.17.5, lodash@^4.2.1:
+lodash@^4.17.11, lodash@^4.17.13, lodash@^4.17.14, lodash@^4.17.15, lodash@^4.2.1:
   version "4.17.15"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.15.tgz#b447f6670a0455bbfeedd11392eff330ea097548"
   integrity sha512-8xOcRHvCjnocdS5cpwXQXVzmmh5e5+saE2QGoeQmbKmRS6J3VQppPOIt0MnmE+4xlZoumy0GPG0D0MVIQbNA1A==
@@ -5894,20 +5892,17 @@ nimnjs@^1.3.2:
     nimn-date-parser "^1.0.0"
     nimn_schema_builder "^1.0.0"
 
-nock@^10.0.6:
-  version "10.0.6"
-  resolved "https://registry.yarnpkg.com/nock/-/nock-10.0.6.tgz#e6d90ee7a68b8cfc2ab7f6127e7d99aa7d13d111"
-  integrity sha512-b47OWj1qf/LqSQYnmokNWM8D88KvUl2y7jT0567NB3ZBAZFz2bWp2PC81Xn7u8F2/vJxzkzNZybnemeFa7AZ2w==
+nock@^11.3.3:
+  version "11.3.3"
+  resolved "https://registry.yarnpkg.com/nock/-/nock-11.3.3.tgz#f4553d87ac8e501d7a995a50df7e24857f879f58"
+  integrity sha512-SrRux5onbWf2ItpmietnLYis+C2QYF08hAo9wv/3QLqaLJVHBSVBTL0EvlD8Hjrm7lTH4vExTzr9gQUsPqy5Cg==
   dependencies:
     chai "^4.1.2"
     debug "^4.1.0"
-    deep-equal "^1.0.0"
     json-stringify-safe "^5.0.1"
-    lodash "^4.17.5"
+    lodash "^4.17.13"
     mkdirp "^0.5.0"
-    propagate "^1.0.0"
-    qs "^6.5.1"
-    semver "^5.5.0"
+    propagate "^2.0.0"
 
 node-fetch-npm@^2.0.2:
   version "2.0.2"
@@ -6226,10 +6221,9 @@ openapi-sampler@^1.0.0-beta.15:
   dependencies:
     json-pointer "^0.6.0"
 
-openapi-schema-to-json-schema@2.2.0:
+openapi-schema-to-json-schema@philsturgeon/openapi-schema-to-json-schema#9692af184c6a3e3d952a88968da07491e47135fb:
   version "2.2.0"
-  resolved "https://registry.yarnpkg.com/openapi-schema-to-json-schema/-/openapi-schema-to-json-schema-2.2.0.tgz#5f41b3485c7fa5a67003215cd1ab1889ca1372a3"
-  integrity sha512-a8ouPAEl7U4MCpQBje+9cDIDSL6xCtWBPat/2i2Py42D5q9EPuB0IkXh4mNRc/cECjHjsgsEn2+GTeMvgE58+w==
+  resolved "https://codeload.github.com/philsturgeon/openapi-schema-to-json-schema/tar.gz/9692af184c6a3e3d952a88968da07491e47135fb"
   dependencies:
     deep-equal "^1.0.1"
 
@@ -6726,10 +6720,10 @@ promzard@^0.3.0:
   dependencies:
     read "1"
 
-propagate@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/propagate/-/propagate-1.0.0.tgz#00c2daeedda20e87e3782b344adba1cddd6ad709"
-  integrity sha1-AMLa7t2iDofjeCs0Stuhzd1q1wk=
+propagate@^2.0.0:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/propagate/-/propagate-2.0.1.tgz#40cdedab18085c792334e64f0ac17256d38f9a45"
+  integrity sha512-vGrhOavPSTz4QVNuBNdcNXePNdNMaO1xj9yBeH1ScQPjk/rhg9sSlCXPhMkFuaNNW/syTvYqsnbIJxMBfRbbag==
 
 proto-list@~1.2.1:
   version "1.2.4"
@@ -8188,6 +8182,11 @@ unc-path-regex@^0.1.0:
   resolved "https://registry.yarnpkg.com/unc-path-regex/-/unc-path-regex-0.1.2.tgz#e73dd3d7b0d7c5ed86fbac6b0ae7d8c6a69d50fa"
   integrity sha1-5z3T17DXxe2G+6xrCufYxqadUPo=
 
+underscore@^1.9.1:
+  version "1.9.1"
+  resolved "https://registry.yarnpkg.com/underscore/-/underscore-1.9.1.tgz#06dce34a0e68a7babc29b365b8e74b8925203961"
+  integrity sha512-5/4etnCkd9c8gwgowi5/om/mYO5ajCaOgdzj/oW+0eQV9WxKBDZw5+ycmKmeaTXjInS/W0BzpGLo2xR2aBwZdg==
+
 union-value@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/union-value/-/union-value-1.0.0.tgz#5c71c34cb5bad5dcebe3ea0cd08207ba5aa1aea4"
@@ -8513,6 +8512,13 @@ ws@^5.2.0:
   integrity sha512-jaHFD6PFv6UgoIVda6qZllptQsMlDEJkTQcybzzXDYM1XO9Y8em691FGMPmM46WGyLU4z9KMgQN+qrux/nhlHA==
   dependencies:
     async-limiter "~1.0.0"
+
+xml-js@^1.6.8:
+  version "1.6.11"
+  resolved "https://registry.yarnpkg.com/xml-js/-/xml-js-1.6.11.tgz#927d2f6947f7f1c19a316dd8eea3614e8b18f8e9"
+  integrity sha512-7rVi2KMfwfWFl+GpPg6m80IVMWXLRjO+PxTq7V2CDhoGak0wzYzFgUY2m4XJ47OGdXd8eLE8EmwfAmdjw7lC1g==
+  dependencies:
+    sax "^1.2.4"
 
 xml-name-validator@^3.0.0:
   version "3.0.0"
