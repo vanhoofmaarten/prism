@@ -9,8 +9,6 @@ export type PrismHttpComponents = IPrismComponents<IHttpOperation, IHttpRequest,
 // TODO: should be complete | and in the @stoplight/types repo
 export type IHttpMethod = HttpMethod | 'trace';
 
-// TODO: Replace with official JSON Schema Faker types
-// https://github.com/json-schema-faker/json-schema-faker/issues/516
 export interface IJsonSchemaFakerOptions {
   defaultInvalidTypeProduct?: string | null;
   defaultRandExpMax?: number;
