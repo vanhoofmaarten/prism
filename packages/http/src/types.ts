@@ -63,10 +63,7 @@ export interface IHttpOperationConfig {
 }
 
 export interface IHttpConfig extends IPrismConfig {
-  mock: false | IHttpOperationConfig;
-
-  validateRequest: boolean;
-  validateResponse: boolean;
+  mock: IHttpOperationConfig;
 }
 
 export type IHttpNameValues = Dictionary<string | string[]>;
@@ -83,13 +80,13 @@ export interface IHttpRequest {
   method: IHttpMethod;
   url: IHttpUrl;
   headers?: IHttpNameValue;
-  body?: any;
+  body?: unknown;
 }
 
 export interface IHttpResponse {
   statusCode: number;
   headers?: IHttpNameValue;
-  body?: any;
+  body?: unknown;
   responseType?: XMLHttpRequestResponseType;
 }
 
@@ -143,7 +140,6 @@ export class ProblemJsonError extends Error {
 }
 
 export type ContentExample = INodeExample | INodeExternalExample;
-export type NonEmptyArray<T> = T[] & { 0: T };
 export type PayloadGenerator = (f: JSONSchema) => unknown;
 
 export type PickRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;

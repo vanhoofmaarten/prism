@@ -1,5 +1,5 @@
-import getHttpOperations from '@stoplight/prism-cli/src/util/getHttpOperations';
 import { createLogger } from '@stoplight/prism-core';
+import { getHttpOperationsFromResource } from '@stoplight/prism-http';
 import { resolve } from 'path';
 import { createServer } from '../';
 import { IPrismHttpServer } from '../types';
@@ -16,10 +16,10 @@ function checkErrorPayloadShape(payload: string) {
 }
 
 async function instantiatePrism(specPath: string) {
-  const operations = await getHttpOperations(specPath);
+  const operations = await getHttpOperationsFromResource(specPath);
   const server = createServer(operations, {
     components: { logger },
-    config: { validateRequest: true, validateResponse: true, mock: { dynamic: false } },
+    config: { checkSecurity: true, validateRequest: true, validateResponse: true, mock: { dynamic: false } },
     cors: true,
   });
   return server;
@@ -138,8 +138,7 @@ describe.each([['petstore.no-auth.oas2.yaml', 'petstore.no-auth.oas3.yaml']])('s
       url: '/pets/findByTags',
     });
 
-    expect(response.statusCode).toBe(422);
-    checkErrorPayloadShape(response.payload);
+    expect(response.statusCode).toBe(400);
   });
 
   test.todo(
@@ -316,10 +315,10 @@ describe.each([['petstore.no-auth.oas2.yaml', 'petstore.no-auth.oas3.yaml']])('s
       });
 
       expect(response.statusCode).toBe(200);
-      expect(response.headers).toHaveProperty('content-type', 'application/json; charset=utf-8');
+      expect(response.headers).toHaveProperty('content-type', 'application/json');
     });
 
-    it('respects the priority when multiple avaiable choices match', async () => {
+    it('respects the priority when multiple available choices match', async () => {
       const response = await server.fastify.inject({
         method: 'GET',
         url: '/pets/10',
@@ -351,7 +350,7 @@ describe.each([['petstore.no-auth.oas2.yaml', 'petstore.no-auth.oas3.yaml']])('s
       });
 
       expect(response.statusCode).toBe(200);
-      expect(response.headers).toHaveProperty('content-type', 'application/json; charset=utf-8');
+      expect(response.headers).toHaveProperty('content-type', 'application/json');
     });
 
     it('returns application/json even if the resources have the charset parameter', async () => {

@@ -12,13 +12,13 @@ export function factory<Resource, Input, Output, Config extends IPrismConfig>(
   components: IPrismComponents<Resource, Input, Output, Config>,
 ): IPrism<Resource, Input, Output, Config> {
   return {
-    process: async (input: Input, resources: Resource[], c?: Config) => {
+    request: async (input: Input, resources: Resource[], c?: Config) => {
       // build the config for this request
       const config = defaults(c, defaultConfig) as Config; // Cast required because lodash types are wrong — https://github.com/DefinitelyTyped/DefinitelyTyped/pull/38156
       const inputValidations: IPrismDiagnostic[] = [];
 
       return pipe(
-        components.router.route({ resources, input, config }),
+        components.route({ resources, input, config }),
         Either.fold(
           error => {
             // rethrow error we if we're attempting to mock
@@ -42,28 +42,30 @@ export function factory<Resource, Input, Output, Config extends IPrismConfig>(
         ),
         TaskEither.chain(resource => {
           // validate input
-          if (config.validateRequest && resource && components.validator.validateInput) {
+          if (config.validateRequest && resource && components.validateInput) {
             inputValidations.push(
-              ...components.validator.validateInput({
+              ...components.validateInput({
                 resource,
-                input,
+                element: input,
               }),
             );
           }
 
-          const inputValidationResult = inputValidations.concat(
-            pipe(
-              validateSecurity(input, resource),
-              map(sec => [sec]),
-              getOrElse<IPrismDiagnostic[]>(() => []),
-            ),
-          );
+          const inputValidationResult = config.checkSecurity
+            ? inputValidations.concat(
+                pipe(
+                  validateSecurity(input, resource),
+                  map(sec => [sec]),
+                  getOrElse<IPrismDiagnostic[]>(() => []),
+                ),
+              )
+            : inputValidations;
 
-          if (resource && components.mocker && config.mock) {
+          if (resource && config.mock) {
             // generate the response
             return pipe(
               TaskEither.fromEither(
-                components.mocker.mock({
+                components.mock({
                   resource,
                   input: {
                     validations: {
@@ -76,31 +78,16 @@ export function factory<Resource, Input, Output, Config extends IPrismConfig>(
               ),
               TaskEither.map(output => ({ output, resource })),
             );
-          } else if (components.forwarder) {
-            // forward request and set output from response
-            return pipe(
-              components.forwarder.fforward({
-                resource,
-                input: {
-                  validations: {
-                    input: inputValidationResult,
-                  },
-                  data: input,
-                },
-                config,
-              }),
-              TaskEither.map(output => ({ output, resource })),
-            );
           }
 
-          return TaskEither.left(new Error('Nor forwarder nor mocker has been selected. Something is wrong'));
+          return TaskEither.left(new Error('Resource not defined. This should never happen.'));
         }),
         TaskEither.map(({ output, resource }) => {
           let outputValidations: IPrismDiagnostic[] = [];
-          if (config.validateResponse && resource && components.validator.validateOutput) {
-            outputValidations = components.validator.validateOutput({
+          if (config.validateResponse && resource && components.validateOutput) {
+            outputValidations = components.validateOutput({
               resource,
-              output,
+              element: output,
             });
           }
 
