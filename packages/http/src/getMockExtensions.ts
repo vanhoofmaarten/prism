@@ -3,16 +3,15 @@ import { defaults, defaultsDeep, pick } from 'lodash';
 import { basename, extname, join, resolve } from 'path';
 
 import {
-  IHttpOperationDynamicConfig,
-  IJsonSchemaFakerExtensionConfigDefaults,
+  IJsonSchemaFakerExtensionConfig,
   IJsonSchemaFakerExtensionDirectories,
   IJsonSchemaFakerExtensionDirectoryNames,
   IJsonSchemaFakerExtensions,
-  IJsonSchemaFakerExtensionsReturnValue,
+  IJsonSchemaFakerExtensionTypeKey,
+  IJsonSchemaFakerExtensionTypes,
   JsonSchemaFakerCustomFormatExtension,
   JsonSchemaFakerCustomGeneratorExtension,
   JsonSchemaFakerExtension,
-  JsonSchemaFakerExtensionConfig,
   JsonSchemaFakerExtensionValidator,
   JsonSchemaFakerExternalGeneratorExtension,
 } from './types';
@@ -24,13 +23,13 @@ export const defaultDirectories: IJsonSchemaFakerExtensionDirectories = {
   customGeneratorsDirectory: 'custom-generators',
 };
 
-export const defaultExtensions: IJsonSchemaFakerExtensionsReturnValue = {
+export const defaultExtensions: IJsonSchemaFakerExtensionTypes = {
   customFormats: {},
   externalGenerators: {},
   customGenerators: {},
 };
 
-export const defaultConfig: IJsonSchemaFakerExtensionConfigDefaults = {
+export const defaultConfig: IJsonSchemaFakerExtensionConfig = {
   watchDirectories: true,
   directories: defaultDirectories,
   ...defaultExtensions,
@@ -105,46 +104,47 @@ const importExtensionType = <T>(
   return extensions;
 };
 
-const getExtensions = (configArg: JsonSchemaFakerExtensionConfig): IJsonSchemaFakerExtensionsReturnValue => {
-  const config: IJsonSchemaFakerExtensionConfigDefaults = defaultsDeep(configArg, defaultConfig);
+const getExtensions = (configArg: IJsonSchemaFakerExtensionConfig): IJsonSchemaFakerExtensionTypes => {
+  const config: IJsonSchemaFakerExtensionConfig = defaultsDeep(configArg, defaultConfig);
+
+  const getExtension = <T>(
+    key: IJsonSchemaFakerExtensionTypeKey,
+    validator: JsonSchemaFakerExtensionValidator,
+  ): IJsonSchemaFakerExtensions<T> =>
+    // Validate both programmatic and file-based extensions
+    validateExtensions<IJsonSchemaFakerExtensions<T>>(
+      // Merge programmatic and file-based extensions. Prioritize programmatic extensions.
+      defaultsDeep(
+        config[key],
+        // Import file-based extensions.
+        importExtensionType<JsonSchemaFakerCustomFormatExtension>(
+          config.directories,
+          IJsonSchemaFakerExtensionDirectoryNames[key],
+        ),
+      ),
+      validator,
+    );
 
   // Get the extensions
   const extensions = {
-    customFormats: validateExtensions<IJsonSchemaFakerExtensions<JsonSchemaFakerCustomFormatExtension>>(
-      defaultsDeep(
-        config.customFormats,
-        importExtensionType<JsonSchemaFakerCustomFormatExtension>(
-          config.directories,
-          IJsonSchemaFakerExtensionDirectoryNames.customFormats,
-        ),
-      ),
+    customFormats: getExtension<JsonSchemaFakerCustomFormatExtension>(
+      IJsonSchemaFakerExtensionTypeKey.customFormats,
       customFormatExtensionValidator,
     ),
-    externalGenerators: validateExtensions<IJsonSchemaFakerExtensions<JsonSchemaFakerExternalGeneratorExtension>>(
-      defaultsDeep(
-        config.externalGenerators,
-        importExtensionType<JsonSchemaFakerExternalGeneratorExtension>(
-          config.directories,
-          IJsonSchemaFakerExtensionDirectoryNames.externalGenerators,
-        ),
-      ),
+    externalGenerators: getExtension<JsonSchemaFakerExternalGeneratorExtension>(
+      IJsonSchemaFakerExtensionTypeKey.externalGenerators,
       externalGeneratorExtensionValidator,
     ),
-    customGenerators: validateExtensions<IJsonSchemaFakerExtensions<JsonSchemaFakerCustomGeneratorExtension>>(
-      defaultsDeep(
-        config.customGenerators,
-        importExtensionType<JsonSchemaFakerCustomGeneratorExtension>(
-          config.directories,
-          IJsonSchemaFakerExtensionDirectoryNames.customGenerators,
-        ),
-      ),
+    customGenerators: getExtension<JsonSchemaFakerExternalGeneratorExtension>(
+      IJsonSchemaFakerExtensionTypeKey.customGenerators,
       customGeneratorExtensionValidator,
     ),
   };
 
+  // Provide non-declared extensions with empty extensions objects
   return defaultsDeep(extensions, defaultExtensions);
 };
 
-export default (config: true | JsonSchemaFakerExtensionConfig): IJsonSchemaFakerExtensionsReturnValue =>
+export default (config: true | IJsonSchemaFakerExtensionConfig): IJsonSchemaFakerExtensionTypes =>
   // Just return the filesystem-based extensions if there are no programmatically extensions defined.
   getExtensions(config === true ? defaultConfig : config);

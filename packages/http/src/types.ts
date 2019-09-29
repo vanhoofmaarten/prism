@@ -54,6 +54,12 @@ export type JsonSchemaFakerExternalGeneratorExtension = Function;
 
 export type JsonSchemaFakerCustomGeneratorExtension = number | string | IJsonSchemaFakerCustomGenerator;
 
+export enum IJsonSchemaFakerExtensionTypeKey {
+  customFormats = 'customFormats',
+  externalGenerators = 'externalGenerators',
+  customGenerators = 'customGenerators',
+}
+
 export type JsonSchemaFakerExtension =
   | JsonSchemaFakerCustomFormatExtension
   | JsonSchemaFakerExternalGeneratorExtension
@@ -62,8 +68,6 @@ export type JsonSchemaFakerExtension =
 export interface IJsonSchemaFakerExtensions<T> {
   [keyword: string]: T;
 }
-
-export type JsonSchemaFakerExtensionConfig = Omit<IHttpOperationDynamicConfig, 'options'>;
 
 export enum IJsonSchemaFakerExtensionDirectoryNames {
   base = 'baseDirectory',
@@ -74,41 +78,34 @@ export enum IJsonSchemaFakerExtensionDirectoryNames {
 
 export type IJsonSchemaFakerExtensionDirectories = Record<IJsonSchemaFakerExtensionDirectoryNames, string>;
 
-export interface IJsonSchemaFakerExtensionConfigDefaults extends Required<JsonSchemaFakerExtensionConfig> {
-  directories: Required<IJsonSchemaFakerExtensionDirectories>;
+export interface IJsonSchemaFakerExtensionConfig extends IJsonSchemaFakerExtensionTypes {
+  watchDirectories: boolean;
+  directories: IJsonSchemaFakerExtensionDirectories;
 }
 
-export interface IJsonSchemaFakerExtensionTypes {
-  [key: string]: IJsonSchemaFakerExtensionType;
-}
+export type IJsonSchemaFakerExtensionTypes = Record<
+  IJsonSchemaFakerExtensionTypeKey,
+  IJsonSchemaFakerExtensions<JsonSchemaFakerExtension>
+>;
 
 export interface IJsonSchemaFakerExtensionType {
   validator: JsonSchemaFakerExtensionValidator;
   importedExtensions: IJsonSchemaFakerExtensions<JsonSchemaFakerExtension> | undefined;
 }
 
-export type IJsonSchemaFakerExtensionsReturnValue = Required<
-  Pick<IHttpOperationDynamicConfig, 'customGenerators' | 'customFormats' | 'externalGenerators'>
->;
-
-export type JSONSchemaGeneratorArgs = Required<
-  Pick<IHttpOperationDynamicConfig, 'customGenerators' | 'customFormats' | 'externalGenerators' | 'options'>
->;
-
-export interface IHttpOperationDynamicConfig {
-  watchDirectories?: boolean;
-  directories?: Partial<IJsonSchemaFakerExtensionDirectories>;
-  options?: IJsonSchemaFakerOptions;
-  customFormats?: IJsonSchemaFakerExtensions<JsonSchemaFakerCustomFormatExtension>;
-  externalGenerators?: IJsonSchemaFakerExtensions<JsonSchemaFakerExternalGeneratorExtension>;
-  customGenerators?: IJsonSchemaFakerExtensions<JsonSchemaFakerCustomGeneratorExtension>;
+export interface IJsonSchemaGeneratorArgs extends Required<IJsonSchemaFakerExtensionTypes> {
+  options: IJsonSchemaFakerOptions;
 }
+
+export interface IHttpOperationDynamicConfig
+  extends Partial<IJsonSchemaFakerExtensionConfig>,
+    Partial<IJsonSchemaGeneratorArgs> {}
 
 export interface IHttpOperationConfig {
   mediaTypes?: string[];
   code?: string;
   exampleKey?: string;
-  dynamic: boolean | Partial<IHttpOperationDynamicConfig>;
+  dynamic: boolean | IHttpOperationDynamicConfig;
 }
 
 export interface IHttpConfig extends IPrismConfig {
