@@ -1,9 +1,8 @@
 import { createLogger } from '@stoplight/prism-core';
 import { createInstance, IHttpConfig, IHttpMethod, PrismHttpInstance, ProblemJsonError } from '@stoplight/prism-http';
-import { IHttpOperation } from '@stoplight/types';
+import { DiagnosticSeverity, IHttpOperation } from '@stoplight/types';
 import * as fastify from 'fastify';
 import * as fastifyCors from 'fastify-cors';
-import * as formbodyParser from 'fastify-formbody';
 import { IncomingMessage, ServerResponse } from 'http';
 import { defaults } from 'lodash';
 import * as typeIs from 'type-is';
@@ -18,7 +17,7 @@ export const createServer = (operations: IHttpOperation[], opts: IPrismHttpServe
     logger: (components && components.logger) || createLogger('HTTP SERVER'),
     disableRequestLogging: true,
     modifyCoreObjects: false,
-  }).register(formbodyParser);
+  });
 
   if (opts.cors) server.register(fastifyCors);
 
@@ -30,6 +29,11 @@ export const createServer = (operations: IHttpOperation[], opts: IPrismHttpServe
         return done(e);
       }
     }
+
+    if (typeIs(req, ['application/x-www-form-urlencoded'])) {
+      return done(null, body);
+    }
+
     const error: Error & { status?: number } = new Error(`Unsupported media type.`);
     error.status = 415;
     Error.captureStackTrace(error);
@@ -103,6 +107,16 @@ export const createServer = (operations: IHttpOperation[], opts: IPrismHttpServe
           if (output.headers) {
             reply.headers(output.headers);
           }
+
+          response.validations.output.forEach(validation => {
+            if (validation.severity === DiagnosticSeverity.Error) {
+              request.log.error(validation.message);
+            } else if (validation.severity === DiagnosticSeverity.Warning) {
+              request.log.warn(validation.message);
+            } else {
+              request.log.info(validation.message);
+            }
+          });
 
           reply.serializer((payload: unknown) => serialize(payload, reply.getHeader('content-type'))).send(output.body);
         } else {
