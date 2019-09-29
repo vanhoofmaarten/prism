@@ -6,14 +6,18 @@ import { Either, map } from 'fp-ts/lib/Either';
 import { pipe } from 'fp-ts/lib/pipeable';
 import { chain, Reader } from 'fp-ts/lib/Reader';
 import { mapLeft } from 'fp-ts/lib/ReaderEither';
-import { isEmpty, isObject, keyBy, mapValues } from 'lodash';
+import { isEmpty, isObject, keyBy, mapValues, omit, pick } from 'lodash';
 import { Logger } from 'pino';
+import mockExtensions from '../getMockExtensions';
 import {
   ContentExample,
   IHttpConfig,
   IHttpOperationConfig,
+  IHttpOperationDynamicConfig,
   IHttpRequest,
   IHttpResponse,
+  IJsonSchemaFakerOptions,
+  JSONSchemaGeneratorArgs,
   PayloadGenerator,
   ProblemJsonError,
 } from '../types';
@@ -23,6 +27,11 @@ import { generate, generateStatic } from './generator/JSONSchema';
 import helpers from './negotiator/NegotiatorHelpers';
 import { IHttpNegotiationResult } from './negotiator/types';
 
+const payloadGeneratorArgs = (config: true | IHttpOperationDynamicConfig): JSONSchemaGeneratorArgs => ({
+  options: typeof config !== 'boolean' ? (pick(config, 'options') as IJsonSchemaFakerOptions) : {},
+  ...mockExtensions(typeof config === 'boolean' ? config : omit(config, 'options')),
+});
+
 const mock: IPrismComponents<IHttpOperation, IHttpRequest, IHttpResponse, IHttpConfig>['mock'] = ({
   resource,
   input,
@@ -30,9 +39,7 @@ const mock: IPrismComponents<IHttpOperation, IHttpRequest, IHttpResponse, IHttpC
 }) => {
   const payloadGenerator: PayloadGenerator =
     config && typeof config.mock !== 'boolean' && config.mock.dynamic
-      ? typeof config.mock.dynamic !== 'boolean'
-        ? generate(config.mock.dynamic)
-        : generate()
+      ? generate(payloadGeneratorArgs(config.mock.dynamic))
       : generateStatic;
 
   return pipe(

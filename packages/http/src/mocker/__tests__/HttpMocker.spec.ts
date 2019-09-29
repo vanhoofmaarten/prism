@@ -2,10 +2,12 @@ import { createLogger } from '@stoplight/prism-core';
 import { IHttpOperation, INodeExample } from '@stoplight/types';
 import { right } from 'fp-ts/lib/Either';
 import { reader } from 'fp-ts/lib/Reader';
-import { flatMap } from 'lodash';
+import { defaultsDeep, flatMap } from 'lodash';
+import { resolve } from 'path';
 import { assertRight } from '../../__tests__/utils';
 import mock from '../../mocker';
 import * as JSONSchemaGenerator from '../../mocker/generator/JSONSchema';
+import { defaultJSONSchemaGeneratorArgs } from '../../mocker/generator/JSONSchema';
 import { JSONSchema } from '../../types';
 import helpers from '../negotiator/NegotiatorHelpers';
 
@@ -183,12 +185,12 @@ describe('mocker', () => {
         describe('should generate a dynamic response', () => {
           const generatedExample = () => ({ hello: 'world' });
 
-          beforeAll(() => {
+          beforeEach(() => {
             jest.spyOn(JSONSchemaGenerator, 'generate').mockReturnValue(generatedExample);
             jest.spyOn(JSONSchemaGenerator, 'generateStatic');
           });
 
-          afterAll(() => {
+          afterEach(() => {
             jest.restoreAllMocks();
           });
 
@@ -220,10 +222,202 @@ describe('mocker', () => {
               expect(result.body).toHaveProperty('hello', 'world');
             });
           });
+
+          it('should load file-based extensions from the default directories', () => {
+            mock({
+              input: mockInput,
+              resource: mockResource,
+              config: {
+                mock: {
+                  dynamic: true,
+                },
+                validateRequest: true,
+                validateResponse: true,
+                checkSecurity: true,
+              },
+            })(logger);
+
+            expect(JSONSchemaGenerator.generate).toHaveBeenCalledWith(
+              defaultsDeep(
+                {
+                  customFormats: { 'custom-format-module': 'string' },
+                  customGenerators: { 'custom-generators-module': 42 },
+                  externalGenerators: { 'external-generators-module': expect.any(Function) },
+                },
+                defaultJSONSchemaGeneratorArgs,
+              ),
+            );
+          });
+
+          it('should override the file-based extensions with programmatically based extensions', () => {
+            mock({
+              input: mockInput,
+              resource: mockResource,
+              config: {
+                mock: {
+                  dynamic: {
+                    directories: {
+                      baseDirectory: resolve(__dirname, '../../__tests__/fixtures/extensions'),
+                    },
+                    customFormats: {
+                      'custom-format-module': 'override',
+                      'programmatic-defined-format': 'module',
+                    },
+                  },
+                },
+                validateRequest: true,
+                validateResponse: true,
+                checkSecurity: true,
+              },
+            })(logger);
+
+            expect(JSONSchemaGenerator.generate).toHaveBeenCalledWith(
+              defaultsDeep(
+                {
+                  customFormats: {
+                    'custom-format-module': 'override',
+                    'programmatic-defined-format': 'module',
+                  },
+                  customGenerators: { 'custom-generators-module': 42 },
+                  externalGenerators: { 'external-generators-module': expect.any(Function) },
+                },
+                defaultJSONSchemaGeneratorArgs,
+              ),
+            );
+          });
+
+          it('should use the configured base directory for file-based extensions', () => {
+            mock({
+              input: mockInput,
+              resource: mockResource,
+              config: {
+                mock: {
+                  dynamic: {
+                    directories: {
+                      baseDirectory: resolve(__dirname, '../../__tests__/fixtures/extensions'),
+                    },
+                  },
+                },
+                validateRequest: true,
+                validateResponse: true,
+                checkSecurity: true,
+              },
+            })(logger);
+
+            expect(JSONSchemaGenerator.generate).toHaveBeenCalledWith(
+              defaultsDeep(
+                {
+                  customFormats: { 'custom-format-module': 'string' },
+                  customGenerators: { 'custom-generators-module': 42 },
+                  externalGenerators: { 'external-generators-module': expect.any(Function) },
+                },
+                defaultJSONSchemaGeneratorArgs,
+              ),
+            );
+          });
+
+          it('should use the configured subdirectories for file-based extensions', () => {
+            mock({
+              input: mockInput,
+              resource: mockResource,
+              config: {
+                mock: {
+                  dynamic: {
+                    directories: {
+                      baseDirectory: resolve(__dirname, '../../__tests__'),
+                      customFormatsDirectory: 'fixtures/extensions/custom-formats',
+                      externalGeneratorsDirectory: 'fixtures/extensions',
+                    },
+                  },
+                },
+                validateRequest: true,
+                validateResponse: true,
+                checkSecurity: true,
+              },
+            })(logger);
+
+            expect(JSONSchemaGenerator.generate).toHaveBeenCalledWith(
+              defaultsDeep(
+                {
+                  customFormats: { 'custom-format-module': 'string' },
+                },
+                defaultJSONSchemaGeneratorArgs,
+              ),
+            );
+          });
+
+          it('should ignore file-based extensions if the predefined folder does not exist', () => {
+            mock({
+              input: mockInput,
+              resource: mockResource,
+              config: {
+                mock: {
+                  dynamic: {
+                    directories: {
+                      baseDirectory: resolve(__dirname, 'foo/bar/baz'),
+                    },
+                  },
+                },
+                validateRequest: true,
+                validateResponse: true,
+                checkSecurity: true,
+              },
+            })(logger);
+
+            expect(JSONSchemaGenerator.generate).toHaveBeenCalledWith(defaultJSONSchemaGeneratorArgs);
+          });
+
+          it('validates the modules against the predefined types', () => {
+            mock({
+              input: mockInput,
+              resource: mockResource,
+              // @ts-ignore
+              config: {
+                mock: {
+                  dynamic: {
+                    directories: {
+                      baseDirectory: resolve(__dirname, 'foo/bar/baz'),
+                    },
+                    externalGenerators: {
+                      'custom-format-module': 42,
+                    },
+                  },
+                },
+                validateRequest: true,
+                validateResponse: true,
+                checkSecurity: true,
+              },
+            })(logger);
+
+            expect(JSONSchemaGenerator.generate).toHaveBeenCalledWith(defaultJSONSchemaGeneratorArgs);
+          });
         });
       });
 
       describe('and dynamic flag is false', () => {
+        it('should ignore the file-based extensions', () => {
+          const generatedExample = () => ({ hello: 'world' });
+
+          jest.spyOn(JSONSchemaGenerator, 'generate').mockReturnValue(generatedExample);
+          jest.spyOn(JSONSchemaGenerator, 'generateStatic');
+
+          mock({
+            input: mockInput,
+            resource: mockResource,
+            config: {
+              mock: { dynamic: false },
+              validateRequest: true,
+              validateResponse: true,
+              checkSecurity: true,
+            },
+          })(logger);
+
+          expect(JSONSchemaGenerator.generate).not.toHaveBeenCalled();
+          expect(JSONSchemaGenerator.generateStatic).not.toHaveBeenCalled();
+
+          jest.restoreAllMocks();
+        });
+
         describe('and the response has an example', () => {
           describe('and the example has been explicited', () => {
             const response = mock({
