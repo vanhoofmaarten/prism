@@ -120,10 +120,7 @@ const getExtensions = (
       defaultsDeep(
         config[key],
         // Import file-based extensions.
-        importExtensionType<JsonSchemaFakerCustomFormatExtension>(
-          config.directories,
-          IJsonSchemaFakerExtensionDirectoryNames[key],
-        ),
+        importExtensionType<T>(config.directories, IJsonSchemaFakerExtensionDirectoryNames[key]),
       ),
       validator,
     );
