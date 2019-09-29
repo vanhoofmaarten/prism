@@ -2,6 +2,8 @@ import { IPrism, IPrismComponents, IPrismConfig } from '@stoplight/prism-core';
 import { Dictionary, HttpMethod, IHttpOperation, INodeExample, INodeExternalExample } from '@stoplight/types';
 import { JSONSchema4, JSONSchema6, JSONSchema7 } from 'json-schema';
 
+export type RecursivePartial<T> = { [P in keyof T]?: RecursivePartial<T[P]> };
+
 export type PrismHttpInstance = IPrism<IHttpOperation, IHttpRequest, IHttpResponse, IHttpConfig>;
 
 export type PrismHttpComponents = IPrismComponents<IHttpOperation, IHttpRequest, IHttpResponse, IHttpConfig>;
@@ -93,13 +95,13 @@ export interface IJsonSchemaFakerExtensionType {
   importedExtensions: IJsonSchemaFakerExtensions<JsonSchemaFakerExtension> | undefined;
 }
 
-export interface IJsonSchemaGeneratorArgs extends Required<IJsonSchemaFakerExtensionTypes> {
+export interface IJsonSchemaGeneratorArgs extends IJsonSchemaFakerExtensionTypes {
   options: IJsonSchemaFakerOptions;
 }
 
 export interface IHttpOperationDynamicConfig
-  extends Partial<IJsonSchemaFakerExtensionConfig>,
-    Partial<IJsonSchemaGeneratorArgs> {}
+  extends RecursivePartial<IJsonSchemaFakerExtensionConfig>,
+    RecursivePartial<IJsonSchemaGeneratorArgs> {}
 
 export interface IHttpOperationConfig {
   mediaTypes?: string[];

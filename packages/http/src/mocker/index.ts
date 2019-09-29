@@ -17,7 +17,7 @@ import {
   IHttpRequest,
   IHttpResponse,
   IJsonSchemaFakerOptions,
-  JSONSchemaGeneratorArgs,
+  IJsonSchemaGeneratorArgs,
   PayloadGenerator,
   ProblemJsonError,
 } from '../types';
@@ -27,7 +27,7 @@ import { generate, generateStatic } from './generator/JSONSchema';
 import helpers from './negotiator/NegotiatorHelpers';
 import { IHttpNegotiationResult } from './negotiator/types';
 
-const payloadGeneratorArgs = (config: true | IHttpOperationDynamicConfig): JSONSchemaGeneratorArgs => ({
+const payloadGeneratorArgs = (config: true | IHttpOperationDynamicConfig): IJsonSchemaGeneratorArgs => ({
   options: typeof config !== 'boolean' ? (pick(config, 'options') as IJsonSchemaFakerOptions) : {},
   ...mockExtensions(typeof config === 'boolean' ? config : omit(config, 'options')),
 });

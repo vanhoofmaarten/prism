@@ -1,6 +1,11 @@
-import { get } from 'lodash';
-import { IHttpOperationDynamicConfig, IJsonSchemaFakerCustomGenerator, JSONSchema } from '../../../types';
-import { generate } from '../JSONSchema';
+import { defaultsDeep, get } from 'lodash';
+import {
+  IHttpOperationDynamicConfig,
+  IJsonSchemaFakerCustomGenerator,
+  IJsonSchemaGeneratorArgs,
+  JSONSchema,
+} from '../../../types';
+import { defaultJsonSchemaGeneratorArgs, generate } from '../JSONSchema';
 
 describe('JSONSchema generator', () => {
   const ipRegExp = /\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/;
@@ -18,13 +23,16 @@ describe('JSONSchema generator', () => {
         required: ['name'],
       };
 
-      const config: IHttpOperationDynamicConfig = {
-        customFormats: {
-          name: 'this is a name',
-          description: () => 'this is a description',
-          fixedNumber: '100',
+      const config: IJsonSchemaGeneratorArgs = defaultsDeep(
+        {
+          customFormats: {
+            name: 'this is a name',
+            description: () => 'this is a description',
+            fixedNumber: '100',
+          },
         },
-      };
+        defaultJsonSchemaGeneratorArgs,
+      );
 
       it('will format a string value', () => {
         const instance = generate(config)(schema);
@@ -67,11 +75,14 @@ describe('JSONSchema generator', () => {
       // @ts-ignore
       const externalGenerator = new ExternalGeneratorModule();
 
-      const config: IHttpOperationDynamicConfig = {
-        externalGenerators: {
-          external: () => externalGenerator,
+      const config: IJsonSchemaGeneratorArgs = defaultsDeep(
+        {
+          externalGenerators: {
+            external: () => externalGenerator,
+          },
         },
-      };
+        defaultJsonSchemaGeneratorArgs,
+      );
 
       it('will have the result of the external generators', () => {
         const instance = generate(config)(schema);
@@ -106,11 +117,14 @@ describe('JSONSchema generator', () => {
 
       const fnctn: IJsonSchemaFakerCustomGenerator = value => value;
 
-      const config: IHttpOperationDynamicConfig = {
-        customGenerators: {
-          fnctn,
+      const config: IJsonSchemaGeneratorArgs = defaultsDeep(
+        {
+          customGenerators: {
+            fnctn,
+          },
         },
-      };
+        defaultJsonSchemaGeneratorArgs,
+      );
 
       const instance = generate(config)(schema);
 

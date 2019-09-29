@@ -14,6 +14,7 @@ import {
   JsonSchemaFakerExtension,
   JsonSchemaFakerExtensionValidator,
   JsonSchemaFakerExternalGeneratorExtension,
+  RecursivePartial,
 } from './types';
 
 export const defaultDirectories: IJsonSchemaFakerExtensionDirectories = {
@@ -104,7 +105,9 @@ const importExtensionType = <T>(
   return extensions;
 };
 
-const getExtensions = (configArg: IJsonSchemaFakerExtensionConfig): IJsonSchemaFakerExtensionTypes => {
+const getExtensions = (
+  configArg: RecursivePartial<IJsonSchemaFakerExtensionConfig>,
+): IJsonSchemaFakerExtensionTypes => {
   const config: IJsonSchemaFakerExtensionConfig = defaultsDeep(configArg, defaultConfig);
 
   const getExtension = <T>(
@@ -145,6 +148,6 @@ const getExtensions = (configArg: IJsonSchemaFakerExtensionConfig): IJsonSchemaF
   return defaultsDeep(extensions, defaultExtensions);
 };
 
-export default (config: true | IJsonSchemaFakerExtensionConfig): IJsonSchemaFakerExtensionTypes =>
+export default (config: true | RecursivePartial<IJsonSchemaFakerExtensionConfig>): IJsonSchemaFakerExtensionTypes =>
   // Just return the filesystem-based extensions if there are no programmatically extensions defined.
   getExtensions(config === true ? defaultConfig : config);

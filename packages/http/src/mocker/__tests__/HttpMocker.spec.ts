@@ -7,7 +7,7 @@ import { resolve } from 'path';
 import { assertRight } from '../../__tests__/utils';
 import mock from '../../mocker';
 import * as JSONSchemaGenerator from '../../mocker/generator/JSONSchema';
-import { defaultJSONSchemaGeneratorArgs } from '../../mocker/generator/JSONSchema';
+import { defaultJsonSchemaGeneratorArgs } from '../../mocker/generator/JSONSchema';
 import { JSONSchema } from '../../types';
 import helpers from '../negotiator/NegotiatorHelpers';
 
@@ -244,7 +244,7 @@ describe('mocker', () => {
                   customGenerators: { 'custom-generators-module': 42 },
                   externalGenerators: { 'external-generators-module': expect.any(Function) },
                 },
-                defaultJSONSchemaGeneratorArgs,
+                defaultJsonSchemaGeneratorArgs,
               ),
             );
           });
@@ -281,7 +281,7 @@ describe('mocker', () => {
                   customGenerators: { 'custom-generators-module': 42 },
                   externalGenerators: { 'external-generators-module': expect.any(Function) },
                 },
-                defaultJSONSchemaGeneratorArgs,
+                defaultJsonSchemaGeneratorArgs,
               ),
             );
           });
@@ -311,7 +311,7 @@ describe('mocker', () => {
                   customGenerators: { 'custom-generators-module': 42 },
                   externalGenerators: { 'external-generators-module': expect.any(Function) },
                 },
-                defaultJSONSchemaGeneratorArgs,
+                defaultJsonSchemaGeneratorArgs,
               ),
             );
           });
@@ -341,7 +341,7 @@ describe('mocker', () => {
                 {
                   customFormats: { 'custom-format-module': 'string' },
                 },
-                defaultJSONSchemaGeneratorArgs,
+                defaultJsonSchemaGeneratorArgs,
               ),
             );
           });
@@ -364,7 +364,7 @@ describe('mocker', () => {
               },
             })(logger);
 
-            expect(JSONSchemaGenerator.generate).toHaveBeenCalledWith(defaultJSONSchemaGeneratorArgs);
+            expect(JSONSchemaGenerator.generate).toHaveBeenCalledWith(defaultJsonSchemaGeneratorArgs);
           });
 
           it('validates the modules against the predefined types', () => {
@@ -389,7 +389,7 @@ describe('mocker', () => {
               },
             })(logger);
 
-            expect(JSONSchemaGenerator.generate).toHaveBeenCalledWith(defaultJSONSchemaGeneratorArgs);
+            expect(JSONSchemaGenerator.generate).toHaveBeenCalledWith(defaultJsonSchemaGeneratorArgs);
           });
         });
       });

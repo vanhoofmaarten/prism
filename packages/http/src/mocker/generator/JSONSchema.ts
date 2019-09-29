@@ -1,19 +1,19 @@
 import * as faker from 'faker';
 import { cloneDeep } from 'lodash';
 import { defaultExtensions } from '../../getMockExtensions';
-import { IJsonSchemaFakerOptions, JSONSchema, JSONSchemaGeneratorArgs, PayloadGenerator } from '../../types';
+import { IJsonSchemaFakerOptions, IJsonSchemaGeneratorArgs, JSONSchema, PayloadGenerator } from '../../types';
 
 // @ts-ignore
 import * as jsf from 'json-schema-faker';
 // @ts-ignore
 import * as sampler from 'openapi-sampler';
 
-export const defaultJSONSchemaGeneratorArgs: JSONSchemaGeneratorArgs = {
+export const defaultJsonSchemaGeneratorArgs: IJsonSchemaGeneratorArgs = {
   options: {},
   ...defaultExtensions,
 };
 
-export function generate(config: JSONSchemaGeneratorArgs = defaultJSONSchemaGeneratorArgs): PayloadGenerator {
+export function generate(config: IJsonSchemaGeneratorArgs = defaultJsonSchemaGeneratorArgs): PayloadGenerator {
   const { customGenerators, customFormats, externalGenerators, options } = config;
 
   const jsfDefaultOptions: IJsonSchemaFakerOptions = {
